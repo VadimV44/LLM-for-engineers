@@ -1,0 +1,487 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Дорожная карта инженера: от новичка до эксперта</title>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;900&family=Roboto:wght@300;400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-primary: #1a1a1a;
+            --bg-secondary: #2d2d2d;
+            --bg-tertiary: #3d3d3d;
+            --accent-orange: #ff6b00;
+            --accent-orange-light: #ff8533;
+            --text-primary: #ffffff;
+            --text-secondary: #b0b0b0;
+            --link-blue: #4a9eff;
+            --green: #4caf50;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Roboto', sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            overflow: hidden;
+            height: 100vh;
+        }
+
+        .slide {
+            width: 100%;
+            height: 100vh;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            padding: 60px 80px 100px 80px;
+        }
+
+        .slide-background {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: url('images/slide_26_background.jpg');
+            background-size: cover;
+            background-position: center;
+            opacity: 0.3;
+            z-index: 0;
+        }
+
+        .slide-content {
+            position: relative;
+            z-index: 1;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .slide-title {
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 700;
+            font-size: 42px;
+            color: var(--text-primary);
+            margin-bottom: 30px;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .label {
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 700;
+            font-size: 16px;
+            color: var(--accent-orange);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 6px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .cards-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 16px;
+            flex: 0 0 auto;
+        }
+
+        .level-card {
+            background: rgba(45, 45, 45, 0.6);
+            padding: 14px 16px 12px;
+            border-radius: 12px;
+            border-top: 4px solid var(--accent-orange);
+            animation: slideInUp 0.6s ease forwards;
+            opacity: 0;
+            transition: transform 0.3s ease, box-shadow 0.3s ease, background 0.3s ease;
+            display: grid;
+            grid-template-rows: 40px 28px 190px 30px;
+            gap: 4px;
+            align-items: start;
+            height: 380px;
+        }
+
+        .level-card:hover {
+            transform: translateY(-6px);
+            box-shadow: 0 15px 30px rgba(255, 107, 0, 0.3);
+            background: rgba(45, 45, 45, 0.85);
+        }
+
+        .level-card:nth-child(1) { animation-delay: 0.05s; }
+        .level-card:nth-child(2) { animation-delay: 0.15s; }
+        .level-card:nth-child(3) { animation-delay: 0.25s; }
+        .level-card:nth-child(4) { animation-delay: 0.35s; }
+
+        .level-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            grid-row: 1;
+            align-self: start;
+        }
+
+        .level-icon {
+            font-size: 28px;
+            line-height: 1;
+        }
+
+        .level-title {
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 700;
+            font-size: 18px;
+            color: var(--accent-orange);
+        }
+
+        .level-timing {
+            font-family: 'Roboto', sans-serif;
+            font-size: 16px;
+            font-weight: 400;
+            color: var(--text-secondary); /* изменено с white на серый */
+            line-height: 1.6;
+            grid-row: 2;
+            align-self: start;
+        }
+
+        .level-list {
+            list-style: none;
+            margin: 0;
+            padding: 0;
+            grid-row: 3;
+            align-self: start;
+        }
+
+        .level-list li {
+            font-family: 'Roboto', sans-serif;
+            font-size: 16px;
+            font-weight: 400;
+            color: var(--text-primary);
+            line-height: 1.6;
+            padding-left: 28px;
+            position: relative;
+            margin-bottom: 2px;
+        }
+
+        .level-list li::before {
+            content: "✓";
+            color: var(--green);
+            font-weight: 700;
+            font-size: 18px;
+            position: absolute;
+            left: 0;
+            top: -2px;
+        }
+
+        .level-tasks {
+            background: rgba(0,0,0,0.15);
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-family: 'Roboto', sans-serif;
+            font-size: 16px;
+            font-weight: 400;
+            color: var(--text-secondary);
+            line-height: 1.6;
+            grid-row: 4;
+            align-self: start;
+            border-left: 2px solid var(--accent-orange);
+        }
+
+        .level-tasks strong {
+            color: var(--text-primary);
+            font-weight: 500;
+        }
+
+        .scheme-block {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            flex-wrap: wrap;
+            padding: 4px 0;
+            animation: fadeIn 0.8s ease 0.8s forwards;
+            opacity: 0;
+            flex: 0 0 auto;
+        }
+
+        .scheme-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            background: rgba(0,0,0,0.3);
+            padding: 6px 16px;
+            border-radius: 8px;
+            font-family: 'Roboto', sans-serif;
+            font-size: 14px;
+            font-weight: 400;
+            color: var(--text-primary);
+            line-height: 1.6;
+        }
+
+        .scheme-item .emoji {
+            font-size: 20px;
+        }
+
+        .scheme-arrow {
+            font-size: 18px;
+            color: var(--accent-orange);
+        }
+
+        .scheme-arrow-up {
+            font-size: 20px;
+            color: var(--accent-orange);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            line-height: 1;
+        }
+
+        .practice-block {
+            background: rgba(45, 45, 45, 0.6);
+            padding: 10px 22px;
+            border-radius: 12px;
+            border-left: 4px solid var(--accent-orange);
+            animation: fadeIn 0.8s ease 1.2s forwards;
+            opacity: 0;
+            margin-top: auto;
+            transition: transform 0.3s ease, box-shadow 0.3s ease, background 0.3s ease;
+        }
+
+        .practice-block:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 15px 30px rgba(255, 107, 0, 0.3);
+            background: rgba(45, 45, 45, 0.85);
+        }
+
+        .practice-label {
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 700;
+            font-size: 14px;
+            color: var(--accent-orange);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 2px;
+        }
+
+        .practice-text {
+            font-family: 'Roboto', sans-serif;
+            font-size: 16px;
+            font-weight: 400;
+            color: var(--text-primary);
+            line-height: 1.6;
+        }
+
+        .practice-text strong {
+            color: var(--accent-orange);
+            font-weight: 500;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes slideInUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .navigation {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            display: flex;
+            gap: 15px;
+            z-index: 1000;
+            align-items: center;
+        }
+
+        .nav-button {
+            width: 80px;
+            height: 45px;
+            border-radius: 8px;
+            background: var(--accent-orange);
+            border: none;
+            color: white;
+            font-size: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .nav-button:hover {
+            background: var(--accent-orange-light);
+            transform: scale(1.1);
+        }
+
+        .nav-button:disabled {
+            background: var(--bg-tertiary);
+            cursor: not-allowed;
+            opacity: 0.5;
+        }
+
+        .progress-bar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: var(--bg-tertiary);
+            z-index: 1000;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: var(--accent-orange);
+            width: 96.29%;
+            transition: width 0.3s ease;
+        }
+
+        .slide-counter {
+            font-family: 'Montserrat', sans-serif;
+            font-size: 16px;
+            color: var(--text-secondary);
+            margin-right: 15px;
+            display: inline-block;
+            vertical-align: middle;
+        }
+
+        audio {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="progress-bar">
+        <div class="progress-fill"></div>
+    </div>
+
+    <div class="navigation">
+        <span class="slide-counter">26 / 27</span>
+        <button class="nav-button" onclick="window.location.href='slide_25.html'">←</button>
+        <button class="nav-button" id="playBtn" onclick="playAudio()">▶</button>
+        <button class="nav-button" onclick="window.location.href='slide_27.html'">→</button>
+    </div>
+
+    <div class="slide">
+        <div class="slide-background"></div>
+        <div class="slide-content">
+            <h1 class="slide-title">Дорожная карта инженера: от новичка до эксперта</h1>
+
+            <div class="cards-grid">
+                <!-- Уровень 1 -->
+                <div class="level-card">
+                    <div class="level-header">
+                        <span class="level-icon">📚</span>
+                        <span class="level-title">Уровень 1: Новичок</span>
+                    </div>
+                    <div class="level-timing">⏱ 0–1 месяц</div>
+                    <ul class="level-list">
+                        <li>Освоил структуру промпта РКЗФО</li>
+                        <li>Использует LLM для анализа данных и генерации черновиков</li>
+                        <li>Понимает ограничения и проверяет ответы</li>
+                    </ul>
+                    <div class="level-tasks">
+                        <strong>Задачи:</strong> анализ документации, простые расчёты
+                    </div>
+                </div>
+
+                <!-- Уровень 2 -->
+                <div class="level-card">
+                    <div class="level-header">
+                        <span class="level-icon">🔧</span>
+                        <span class="level-title">Уровень 2: Средний</span>
+                    </div>
+                    <div class="level-timing">⏱ 1–3 месяца</div>
+                    <ul class="level-list">
+                        <li>Применяет техники Few-shot, CoT, ToT</li>
+                        <li>Разработал 5–10 шаблонов промптов для типовых задач</li>
+                        <li>Интегрировал LLM в рутинные задачи</li>
+                    </ul>
+                    <div class="level-tasks">
+                        <strong>Задачи:</strong> создание документов
+                    </div>
+                </div>
+
+                <!-- Уровень 3 -->
+                <div class="level-card">
+                    <div class="level-header">
+                        <span class="level-icon">👥</span>
+                        <span class="level-title">Уровень 3: Продвинутый</span>
+                    </div>
+                    <div class="level-timing">⏱ 3–6 месяцев</div>
+                    <ul class="level-list">
+                        <li>Обучает коллег, создал базу знаний отдела</li>
+                        <li>Интегрировал LLM с корпоративными ИТ/ИС-системами</li>
+                        <li>Участвует в разработке стандартов</li>
+                    </ul>
+                    <div class="level-tasks">
+                        <strong>Задачи:</strong> масштабирование опыта и наставничество
+                    </div>
+                </div>
+
+                <!-- Уровень 4 -->
+                <div class="level-card">
+                    <div class="level-header">
+                        <span class="level-icon">⭐</span>
+                        <span class="level-title">Уровень 4: Эксперт</span>
+                    </div>
+                    <div class="level-timing">⏱ 6–12 месяцев</div>
+                    <ul class="level-list">
+                        <li>Лидер внедрения LLM в подразделении/компании</li>
+                        <li>Разрабатывает кастомные решения под специфические задачи</li>
+                        <li>Участвует в стратегических проектах цифровой трансформации</li>
+                    </ul>
+                    <div class="level-tasks">
+                        <strong>Задачи:</strong> стратегия, архитектура, управление изменениями
+                    </div>
+                </div>
+            </div>
+
+            <!-- Схема-лестница -->
+            <div class="scheme-block">
+                <div class="scheme-item"><span class="emoji">📚</span> Новичок</div>
+                <span class="scheme-arrow-up">⬆</span>
+                <div class="scheme-item"><span class="emoji">🔧</span> Средний</div>
+                <span class="scheme-arrow-up">⬆</span>
+                <div class="scheme-item"><span class="emoji">👥</span> Продвинутый</div>
+                <span class="scheme-arrow-up">⬆</span>
+                <div class="scheme-item"><span class="emoji">⭐</span> Эксперт</div>
+            </div>
+
+            <!-- Блок практики -->
+            <div class="practice-block">
+                <div class="practice-label">💡 Практическая рекомендация</div>
+                <div class="practice-text">
+                    Поставьте себе цель — достичь <strong>уровня 2</strong> за 3 месяца. Еженедельно используйте LLM для рабочих и повседневных задач.
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <audio id="audio-26" src="audio/slide_26_audio.mp3"></audio>
+
+    <script>
+        function playAudio() {
+            const audio = document.getElementById('audio-26');
+            if (audio) {
+                audio.play().catch(e => console.log('Audio play failed:', e));
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const audio = document.getElementById('audio-26');
+            if (audio) {
+                audio.play().catch(e => console.log('Audio play failed:', e));
+            }
+        });
+    </script>
+</body>
+</html>

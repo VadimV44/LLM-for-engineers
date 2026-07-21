@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Улучшение качества и управление рисками с LLM</title>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;900&family=Roboto:wght@300;400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-primary: #1a1a1a;
+            --bg-secondary: #2d2d2d;
+            --bg-tertiary: #3d3d3d;
+            --accent-orange: #ff6b00;
+            --accent-orange-light: #ff8533;
+            --text-primary: #ffffff;
+            --text-secondary: #b0b0b0;
+            --link-blue: #4a9eff;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Roboto', sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            overflow: hidden;
+            height: 100vh;
+        }
+
+        .slide {
+            width: 100%;
+            height: 100vh;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            padding: 60px 80px 100px 80px;
+        }
+
+        .slide-background {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: url('images/slide_18_background.jpg');
+            background-size: cover;
+            background-position: center;
+            opacity: 0.3;
+            z-index: 0;
+        }
+
+        .slide-content {
+            position: relative;
+            z-index: 1;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .slide-title {
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 700;
+            font-size: 42px;
+            color: var(--text-primary);
+            margin-bottom: 40px;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .label {
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 700;
+            font-size: 16px;
+            color: var(--accent-orange);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        /* Верхний ряд: тезисы слева, метрики справа */
+        .top-row {
+            display: grid;
+            grid-template-columns: 1.5fr 1fr;
+            gap: 20px;
+            flex: 0 0 auto;
+            animation: slideInUp 0.6s ease forwards;
+            opacity: 0;
+        }
+
+        .theses-column {
+            background: rgba(45, 45, 45, 0.6);
+            padding: 18px 20px;
+            border-radius: 12px;
+            border-left: 4px solid var(--accent-orange);
+            transition: transform 0.3s ease, box-shadow 0.3s ease, background 0.3s ease;
+        }
+
+        .theses-column:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 15px 30px rgba(255, 107, 0, 0.3);
+            background: rgba(45, 45, 45, 0.85);
+        }
+
+        .theses-list {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+            margin-top: 8px;
+        }
+
+        .theses-list li {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            font-size: 16px;
+            color: var(--text-secondary);
+            line-height: 1.5;
+        }
+
+        .theses-list li .check {
+            color: var(--accent-orange);
+            font-size: 18px;
+            flex-shrink: 0;
+            margin-top: 1px;
+        }
+
+        .theses-list li strong {
+            color: var(--text-primary);
+            font-weight: 500;
+        }
+
+        /* Правая колонка: метрики (таблица 3×2) */
+        .metrics-column {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            justify-content: center;
+        }
+
+        .metric-item {
+            background: rgba(45, 45, 45, 0.6);
+            padding: 14px 18px;
+            border-radius: 12px;
+            border-left: 4px solid var(--accent-orange);
+            animation: slideInRight 0.6s ease forwards;
+            opacity: 0;
+            transition: transform 0.3s ease, box-shadow 0.3s ease, background 0.3s ease;
+            display: grid;
+            grid-template-columns: auto 1fr;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .metric-item:hover {
+            transform: translateX(-6px);
+            box-shadow: 0 10px 25px rgba(255, 107, 0, 0.3);
+            background: rgba(45, 45, 45, 0.85);
+        }
+
+        .metric-item:nth-child(1) { animation-delay: 0.2s; }
+        .metric-item:nth-child(2) { animation-delay: 0.4s; }
+        .metric-item:nth-child(3) { animation-delay: 0.6s; }
+
+        .metric-item .number {
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 900;
+            font-size: 28px;
+            color: var(--accent-orange);
+            white-space: nowrap;
+            text-align: left;
+            min-width: 70px;
+        }
+
+        .metric-item .description {
+            font-size: 16px;
+            color: var(--text-secondary);
+            line-height: 1.4;
+            text-align: left;
+            word-break: break-word;
+        }
+
+        /* Схема по центру */
+        .scheme-block {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            flex-wrap: wrap;
+            padding: 10px 0;
+            animation: fadeIn 0.8s ease 0.4s forwards;
+            opacity: 0;
+            flex: 0 0 auto;
+        }
+
+        .scheme-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 14px;
+            color: var(--text-primary);
+            background: rgba(0,0,0,0.3);
+            padding: 6px 14px;
+            border-radius: 6px;
+        }
+
+        .scheme-item .icon {
+            font-size: 22px;
+        }
+
+        .scheme-arrow {
+            font-size: 20px;
+            color: var(--accent-orange);
+        }
+
+        /* Блок с примерами промптов (общая левая граница) */
+        .prompts-block {
+            background: rgba(45, 45, 45, 0.6);
+            padding: 18px 22px;
+            border-radius: 12px;
+            border-left: 4px solid var(--accent-orange);
+            animation: slideInUp 0.8s ease 0.6s forwards;
+            opacity: 0;
+            transition: transform 0.3s ease, box-shadow 0.3s ease, background 0.3s ease;
+            flex: 1 1 auto;
+            min-height: 0;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .prompts-block:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 15px 30px rgba(255, 107, 0, 0.3);
+            background: rgba(45, 45, 45, 0.85);
+        }
+
+        .prompts-header {
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 700;
+            font-size: 16px;
+            color: var(--accent-orange);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 4px;
+            flex-shrink: 0;
+        }
+
+        .prompt-item {
+            border-bottom: 1px solid rgba(255, 107, 0, 0.15);
+            padding-bottom: 10px;
+        }
+
+        .prompt-item:last-child {
+            border-bottom: none;
+            padding-bottom: 0;
+        }
+
+        .prompt-title {
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 700;
+            font-size: 16px;
+            color: var(--accent-orange);
+            margin-bottom: 2px;
+        }
+
+        .prompt-text {
+            font-size: 16px;
+            color: var(--text-secondary);
+            line-height: 1.5;
+        }
+
+        .prompt-text .label-marker {
+            color: #ffffff;
+            font-weight: normal;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes slideInUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes slideInRight {
+            from { opacity: 0; transform: translateX(50px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        /* Navigation */
+        .navigation {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            display: flex;
+            gap: 15px;
+            z-index: 1000;
+            align-items: center;
+        }
+
+        .nav-button {
+            width: 80px;
+            height: 45px;
+            border-radius: 8px;
+            background: var(--accent-orange);
+            border: none;
+            color: white;
+            font-size: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .nav-button:hover {
+            background: var(--accent-orange-light);
+            transform: scale(1.1);
+        }
+
+        .nav-button:disabled {
+            background: var(--bg-tertiary);
+            cursor: not-allowed;
+            opacity: 0.5;
+        }
+
+        .progress-bar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: var(--bg-tertiary);
+            z-index: 1000;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: var(--accent-orange);
+            width: 66.66%; /* 18/27 */
+            transition: width 0.3s ease;
+        }
+
+        .slide-counter {
+            font-family: 'Montserrat', sans-serif;
+            font-size: 16px;
+            color: var(--text-secondary);
+            margin-right: 15px;
+            display: inline-block;
+            vertical-align: middle;
+        }
+
+        audio {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="progress-bar">
+        <div class="progress-fill"></div>
+    </div>
+
+    <div class="navigation">
+        <span class="slide-counter">18 / 27</span>
+        <button class="nav-button" onclick="window.location.href='slide_17.html'">←</button>
+        <button class="nav-button" id="playBtn" onclick="playAudio()">▶</button>
+        <button class="nav-button" onclick="window.location.href='slide_19.html'">→</button>
+    </div>
+
+    <div class="slide">
+        <div class="slide-background"></div>
+        <div class="slide-content">
+            <h1 class="slide-title">Улучшение качества и управление рисками с LLM</h1>
+
+            <!-- Верхний ряд: тезисы слева, метрики справа -->
+            <div class="top-row">
+                <div class="theses-column">
+                    <div class="label">📋 Ключевые возможности</div>
+                    <ul class="theses-list">
+                        <li><span class="check">✔</span> <strong>Проведение FMEA</strong> — автоматизированный анализ видов и последствий отказов</li>
+                        <li><span class="check">✔</span> <strong>Расследования дефектов по качеству</strong> — быстрый сбор и анализ данных о несоответствиях</li>
+                        <li><span class="check">✔</span> <strong>Причинно-следственный анализ (5 почему, 8D)</strong> — пошаговое выявление корневых причин</li>
+                        <li><span class="check">✔</span> <strong>Анализ логов сварки и статистики дефектов</strong> — выявление паттернов и аномалий</li>
+                        <li><span class="check">✔</span> <strong>Разработка превентивных мер</strong> — генерация рекомендаций по устранению причин</li>
+                        <li><span class="check">✔</span> <strong>Управление рисками</strong> — оценка и приоритизация рисков на основе данных</li>
+                    </ul>
+                </div>
+
+                <!-- Правая колонка: метрики -->
+                <div class="metrics-column">
+                    <div class="metric-item">
+                        <span class="number">до 70%</span>
+                        <span class="description">сокращение времени на расследование дефектов</span>
+                    </div>
+                    <div class="metric-item">
+                        <span class="number">до 95%</span>
+                        <span class="description">точность выявления корневых причин при использовании 5 почему</span>
+                    </div>
+                    <div class="metric-item">
+                        <span class="number">до 30%</span>
+                        <span class="description">снижение повторяемости дефектов после внедрения превентивных мер</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Схема по центру -->
+            <div class="scheme-block">
+                <div class="scheme-item"><span class="icon">🐞</span> Дефект</div>
+                <span class="scheme-arrow">→</span>
+                <div class="scheme-item"><span class="icon">📊</span> Данные</div>
+                <span class="scheme-arrow">→</span>
+                <div class="scheme-item"><span class="icon">🧠</span> LLM-анализ</div>
+                <span class="scheme-arrow">→</span>
+                <div class="scheme-item"><span class="icon">🔧</span> Корректирующие мероприятия</div>
+            </div>
+
+            <!-- Блок с примерами промптов (общая левая граница) с заголовком -->
+            <div class="prompts-block">
+                <div class="prompts-header">✅ Примеры промптов</div>
+
+                <!-- 1. Проведение FMEA -->
+                <div class="prompt-item">
+                    <div class="prompt-title">📋 Проведение FMEA</div>
+                    <div class="prompt-text">
+                        <span class="label-marker">«Ты — инженер по качеству с опытом проведения FMEA. Проведи FMEA-анализ процесса контактной сварки кузовных деталей из низкоуглеродистой стали. Выяви не менее 5 потенциальных дефектов. Для каждого дефекта укажи: причины, последствия, текущие средства контроля. Рассчитай RPN (приоритетное число риска) по шкале 1–10 для каждого дефекта. Предложи корректирующие мероприятия для трёх дефектов с наибольшим RPN.»</span>
+                    </div>
+                </div>
+
+                <!-- 2. Расследование дефектов по качеству -->
+                <div class="prompt-item">
+                    <div class="prompt-title">🔍 Расследование дефектов по качеству</div>
+                    <div class="prompt-text">
+                        <span class="label-marker">«Ты — инженер-технолог. Проведи расследование дефекта "выплеск" при контактной сварке. Используй данные из приложенного файла: журнал параметров сварки, протоколы испытаний, фото дефектов. Собери все факты, выяви временные и технологические закономерности. Составь отчёт по структуре: описание дефекта, условия возникновения, предварительные выводы, список необходимых дополнительных данных.»</span>
+                    </div>
+                </div>
+
+                <!-- 3. Причинно-следственный анализ (5 почему) -->
+                <div class="prompt-item">
+                    <div class="prompt-title">❓ Причинно-следственный анализ (5 почему)</div>
+                    <div class="prompt-text">
+                        <span class="label-marker">«Ты — инженер по качеству. Проведи анализ корневых причин дефекта "непровар" при контактной сварке с использованием метода "5 почему". На каждом шаге задавай вопрос "почему?" и давай ответ на основе имеющихся данных. В конце укажи корневую причину и предложи конкретные корректирующие мероприятия. Если данные неполные, укажи, какая информация требуется для завершения анализа.»</span>
+                    </div>
+                </div>
+
+                <!-- 4. Анализ логов сварки и статистики дефектов -->
+                <div class="prompt-item">
+                    <div class="prompt-title">📊 Анализ логов сварки и статистики дефектов</div>
+                    <div class="prompt-text">
+                        <span class="label-marker">«Ты — специалист по анализу данных. Проанализируй прикреплённый файл с логами сварки (параметры тока, времени, усилия) и статистику дефектов за последние 3 месяца. Выяви корреляции между отклонениями параметров и возникновением дефектов. Определи топ-3 параметра, которые наиболее сильно влияют на качество сварки. Построй график зависимости и предложи оптимальные диапазоны параметров для снижения брака.»</span>
+                    </div>
+                </div>
+
+                <!-- 5. Разработка превентивных мер -->
+                <div class="prompt-item">
+                    <div class="prompt-title">🛠️ Разработка превентивных мер</div>
+                    <div class="prompt-text">
+                        <span class="label-marker">«Ты — инженер по качеству. На основе результатов анализа дефектов и выявленных корневых причин (приложен файл с данными) разработай перечень превентивных мероприятий. Для каждой меры укажи: описание, ожидаемый эффект (снижение брака в %), срок внедрения, необходимые ресурсы, ответственного. Оцени эффективность каждой меры и предложи план внедрения с prioritetom (A, B, C).»</span>
+                    </div>
+                </div>
+
+                <!-- 6. Управление рисками -->
+                <div class="prompt-item">
+                    <div class="prompt-title">⚠️ Управление рисками</div>
+                    <div class="prompt-text">
+                        <span class="label-marker">«Ты — инженер-аналитик. Проведи оценку рисков для сварочного производства на основе исторических данных о дефектах и отказах оборудования (файл приложен). Идентифицируй не менее 10 рисков, для каждого укажи: описание, вероятность (1–5), тяжесть последствий (1–5), уровень риска (произведение). Сгруппируй риски по категориям (технологические, оборудование, человеческий фактор, материалы). Предложи план управления рисками с приоритетными действиями для рисков с высоким уровнем.»</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <audio id="audio-18" src="audio/slide_18_audio.mp3"></audio>
+
+    <script>
+        function playAudio() {
+            const audio = document.getElementById('audio-18');
+            if (audio) {
+                audio.play().catch(e => console.log('Audio play failed:', e));
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const audio = document.getElementById('audio-18');
+            if (audio) {
+                audio.play().catch(e => console.log('Audio play failed:', e));
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Что умеет LLM в инженерной задаче</title>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;900&family=Roboto:wght@300;400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-primary: #1a1a1a;
+            --bg-secondary: #2d2d2d;
+            --bg-tertiary: #3d3d3d;
+            --accent-orange: #ff6b00;
+            --accent-orange-light: #ff8533;
+            --text-primary: #ffffff;
+            --text-secondary: #b0b0b0;
+            --link-blue: #4a9eff;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Roboto', sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            overflow: hidden;
+            height: 100vh;
+        }
+
+        .slide {
+            width: 100%;
+            height: 100vh;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            padding: 60px 80px 100px 80px;
+        }
+
+        .slide-background {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: url('images/slide_07_background.jpg');
+            background-size: cover;
+            background-position: center;
+            opacity: 0.3;
+            z-index: 0;
+        }
+
+        .slide-content {
+            position: relative;
+            z-index: 1;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .slide-title {
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 700;
+            font-size: 42px;
+            color: var(--text-primary);
+            margin-bottom: 40px;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .cards-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 25px;
+            flex: 1;
+            margin-bottom: 20px;
+        }
+
+        .task-card {
+            background: rgba(45, 45, 45, 0.6);
+            padding: 25px 20px;
+            border-radius: 12px;
+            border-top: 4px solid var(--accent-orange);
+            display: flex;
+            flex-direction: column;
+            animation: slideInUp 0.6s ease forwards;
+            opacity: 0;
+            transition: transform 0.3s ease, box-shadow 0.3s ease, background 0.3s ease;
+        }
+
+        .task-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 15px 30px rgba(255, 107, 0, 0.3);
+            background: rgba(45, 45, 45, 0.85);
+        }
+
+        .task-card:nth-child(1) { animation-delay: 0.2s; }
+        .task-card:nth-child(2) { animation-delay: 0.4s; }
+        .task-card:nth-child(3) { animation-delay: 0.6s; }
+        .task-card:nth-child(4) { animation-delay: 0.8s; }
+        .task-card:nth-child(5) { animation-delay: 1s; }
+
+        .task-header {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .task-number {
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 900;
+            font-size: 48px;
+            color: var(--accent-orange);
+            line-height: 1;
+            flex-shrink: 0;
+        }
+
+        .task-title {
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 700;
+            font-size: 16px;
+            color: var(--text-primary);
+            line-height: 1.3;
+            flex-grow: 1;
+        }
+
+        .task-list {
+            list-style: none;
+            font-size: 16px; /* исправлено с 13px на 16px */
+            color: var(--text-secondary);
+            line-height: 1.6;
+            flex-grow: 1;
+        }
+
+        .task-list li {
+            margin-bottom: 8px;
+            padding-left: 15px;
+            position: relative;
+        }
+
+        .task-list li:before {
+            content: "•";
+            color: var(--accent-orange);
+            font-weight: bold;
+            position: absolute;
+            left: 0;
+        }
+
+        .bottom-section {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            margin-top: 20px;
+        }
+
+        .prompt-example {
+            background: rgba(45, 45, 45, 0.6);
+            padding: 25px 30px;
+            border-radius: 12px;
+            border-left: 4px solid var(--accent-orange);
+            width: 100%;
+            animation: slideInUp 0.8s ease 1.2s forwards;
+            opacity: 0;
+            margin-bottom: 20px;
+        }
+
+        .prompt-label {
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 700;
+            font-size: 14px;
+            color: var(--accent-orange);
+            margin-bottom: 12px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .prompt-text {
+            font-family: 'Roboto', sans-serif;
+            font-size: 16px;
+            color: var(--text-primary);
+            line-height: 1.6;
+            white-space: pre-line;
+        }
+
+        .prompt-link {
+            font-size: 16px;
+            color: var(--link-blue);
+            font-style: italic;
+            text-decoration: underline;
+            transition: all 0.3s ease;
+            align-self: flex-start;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .prompt-link:hover {
+            color: var(--accent-orange);
+            text-decoration: none;
+        }
+
+        .prompt-link::after {
+            content: "→";
+            font-size: 18px;
+            transition: transform 0.3s ease;
+        }
+
+        .prompt-link:hover::after {
+            transform: translateX(5px);
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes slideInUp {
+            from { opacity: 0; transform: translateY(50px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Navigation */
+        .navigation {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            display: flex;
+            gap: 15px;
+            z-index: 1000;
+            align-items: center;
+        }
+
+        .nav-button {
+            width: 80px;
+            height: 45px;
+            border-radius: 8px;
+            background: var(--accent-orange);
+            border: none;
+            color: white;
+            font-size: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .nav-button:hover {
+            background: var(--accent-orange-light);
+            transform: scale(1.1);
+        }
+
+        .nav-button:disabled {
+            background: var(--bg-tertiary);
+            cursor: not-allowed;
+            opacity: 0.5;
+        }
+
+        .progress-bar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: var(--bg-tertiary);
+            z-index: 1000;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: var(--accent-orange);
+            width: 25.9%; /* 7/27 */
+            transition: width 0.3s ease;
+        }
+
+        .slide-counter {
+            font-family: 'Montserrat', sans-serif;
+            font-size: 16px;
+            color: var(--text-secondary);
+            margin-right: 15px;
+            display: inline-block;
+            vertical-align: middle;
+        }
+
+        audio {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="progress-bar">
+        <div class="progress-fill"></div>
+    </div>
+
+    <!-- Навигация: счётчик + кнопки ←, ▶, → -->
+    <div class="navigation">
+        <span class="slide-counter">7 / 27</span>
+        <button class="nav-button" onclick="window.location.href='slide_06.html'">←</button>
+        <button class="nav-button" id="playBtn" onclick="playAudio()">▶</button>
+        <button class="nav-button" onclick="window.location.href='slide_08.html'">→</button>
+    </div>
+
+    <div class="slide">
+        <div class="slide-background"></div>
+        
+        <div class="slide-content">
+            <h1 class="slide-title">Что умеет LLM в инженерной задаче</h1>
+            
+            <div class="cards-grid">
+                <div class="task-card">
+                    <div class="task-header">
+                        <div class="task-number">1</div>
+                        <div class="task-title">Управление данными</div>
+                    </div>
+                    <ul class="task-list">
+                        <li>Поиск и пояснение информации</li>
+                        <li>Структурирование и сжатие данных</li>
+                        <li>Трассировка требований</li>
+                        <li>Сравнение версий документов</li>
+                        <li>Перевод и адаптация документов</li>
+                        <li>Обработка сводных таблиц</li>
+                        <li>Управление опытом и знаниями</li>
+                    </ul>
+                </div>
+
+                <div class="task-card">
+                    <div class="task-header">
+                        <div class="task-number">2</div>
+                        <div class="task-title">Улучшение качества и управление рисками</div>
+                    </div>
+                    <ul class="task-list">
+                        <li>Проведение FMEA</li>
+                        <li>Расследования дефектов по качеству</li>
+                        <li>Причинно-следственный анализ (5 почему, 8D)</li>
+                        <li>Анализ логов сварки и статистики дефектов</li>
+                        <li>Разработка превентивных мер</li>
+                        <li>Управление рисками</li>
+                    </ul>
+                </div>
+
+                <div class="task-card">
+                    <div class="task-header">
+                        <div class="task-number">3</div>
+                        <div class="task-title">Разработка и планирование</div>
+                    </div>
+                    <ul class="task-list">
+                        <li>Разработка документации (ТЗ, BOM, техкарты)</li>
+                        <li>Разработка технологических процессов</li>
+                        <li>Оптимизация бизнес-процессов</li>
+                        <li>Составление RASIC</li>
+                        <li>Технико-экономическое обоснование</li>
+                        <li>Бюджетирование, OPEX/CAPEX</li>
+                    </ul>
+                </div>
+
+                <div class="task-card">
+                    <div class="task-header">
+                        <div class="task-number">4</div>
+                        <div class="task-title">Расчёты и интеграции</div>
+                    </div>
+                    <ul class="task-list">
+                        <li>Расчёт технологических параметров</li>
+                        <li>Интеграции с CAD/CAE</li>
+                        <li>Автоматизация рутинных операций</li>
+                        <li>Написание макросов для Excel</li>
+                        <li>Работа с разнородными типами данных</li>
+                        <li>Расчёт себестоимости</li>
+                    </ul>
+                </div>
+
+                <div class="task-card">
+                    <div class="task-header">
+                        <div class="task-number">5</div>
+                        <div class="task-title">Идеи и развитие</div>
+                    </div>
+                    <ul class="task-list">
+                        <li>Генерация идей</li>
+                        <li>Расширение собственной экспертизы</li>
+                        <li>Персонализированное обучение</li>
+                        <li>Ассистент по непрерывному совершенствованию</li>
+                        <li>Чат-боты</li>
+                        <li>Изучение лучших мировых практик</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="bottom-section">
+                <div class="prompt-example">
+                    <div class="prompt-label">Пример промпта</div>
+                    <div class="prompt-text">Ты профессиональный технический переводчик с глубоким знанием машиностроения и иностранных языков, работающий в автомобильной промышленности. Необходимо сделать точный технический перевод паспорта на оборудование с китайского на русский язык. Дословно переведи предоставленный технический документ на русский язык. Формат ответа: Сохрани точную структуру исходного документа. Включай все заголовки, подзаголовки, списки, номера страниц, сноски и специальные обозначения. Используй markdown для форматирования. Технические термины и торговые марки (если они на латинице) оставь без перевода. Единицы измерения и числовые значения сохрани в оригинальном виде. Аббревиатуры при первом упоминании расшифруй в скобках. Стиль: Строгий, официально-деловой, технический. Объём: Полный перевод без сокращений. Запрещено: Добавлять комментарии, интерпретации, опускать части текста или изменять смысл.</div>
+                </div>
+                <a href="https://alice.yandex.ru/prompthub" class="prompt-link" target="_blank">Примеры промптов для повседневных задач</a>
+            </div>
+        </div>
+    </div>
+
+    <audio id="audio-7" src="audio/slide_07_audio.mp3"></audio>
+
+    <script>
+        function playAudio() {
+            const audio = document.getElementById('audio-7');
+            if (audio) {
+                audio.play().catch(e => console.log('Audio play failed:', e));
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const audio = document.getElementById('audio-7');
+            if (audio) {
+                audio.play().catch(e => console.log('Audio play failed:', e));
+            }
+        });
+    </script>
+</body>
+</html>

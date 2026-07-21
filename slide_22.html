@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Безопасность данных: что можно, а что нельзя отправлять в LLM</title>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;900&family=Roboto:wght@300;400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-primary: #1a1a1a;
+            --bg-secondary: #2d2d2d;
+            --bg-tertiary: #3d3d3d;
+            --accent-orange: #ff6b00;
+            --accent-orange-light: #ff8533;
+            --text-primary: #ffffff;
+            --text-secondary: #b0b0b0;
+            --link-blue: #4a9eff;
+            --green: #4caf50;
+            --yellow: #ffc107;
+            --red: #f44336;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Roboto', sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            overflow: hidden;
+            height: 100vh;
+        }
+
+        .slide {
+            width: 100%;
+            height: 100vh;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            padding: 60px 80px 100px 80px;
+        }
+
+        .slide-background {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: url('images/slide_22_background.jpg');
+            background-size: cover;
+            background-position: center;
+            opacity: 0.3;
+            z-index: 0;
+        }
+
+        .slide-content {
+            position: relative;
+            z-index: 1;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .slide-title {
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 700;
+            font-size: 42px;
+            color: var(--text-primary);
+            margin-bottom: 40px;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .zones-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            flex: 0 0 auto;
+        }
+
+        .zone-card {
+            display: grid;
+            grid-template-rows: 45px 150px 55px 70px;
+            gap: 8px;
+            align-items: start;
+            height: 380px;
+            padding: 18px 18px 15px;
+            border-radius: 12px;
+            border-top: 4px solid var(--accent-orange);
+            animation: slideInUp 0.6s ease forwards;
+            opacity: 0;
+            transition: transform 0.3s ease, box-shadow 0.3s ease, background 0.3s ease;
+        }
+
+        .zone-card:hover {
+            transform: translateY(-6px);
+            box-shadow: 0 15px 30px rgba(255, 107, 0, 0.3);
+        }
+
+        .zone-card:nth-child(1) { animation-delay: 0.1s; }
+        .zone-card:nth-child(2) { animation-delay: 0.2s; }
+        .zone-card:nth-child(3) { animation-delay: 0.3s; }
+
+        .zone-card.green {
+            background: rgba(76, 175, 80, 0.05);
+            border-top-color: var(--green);
+        }
+        .zone-card.green:hover {
+            background: rgba(76, 175, 80, 0.15);
+        }
+
+        .zone-card.yellow {
+            background: rgba(255, 193, 7, 0.05);
+            border-top-color: var(--yellow);
+        }
+        .zone-card.yellow:hover {
+            background: rgba(255, 193, 7, 0.15);
+        }
+
+        .zone-card.red {
+            background: rgba(244, 67, 54, 0.05);
+            border-top-color: var(--red);
+        }
+        .zone-card.red:hover {
+            background: rgba(244, 67, 54, 0.15);
+        }
+
+        /* Бейдж — белый текст, полупрозрачный фон */
+        .zone-badge {
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 700;
+            font-size: 20px;
+            color: #ffffff;
+            line-height: 1.2;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 16px;
+            border-radius: 20px;
+            align-self: flex-start;
+            background: transparent; /* будет переопределён для каждой зоны */
+        }
+
+        .zone-card.green .zone-badge {
+            background: rgba(76, 175, 80, 0.5);
+        }
+        .zone-card.yellow .zone-badge {
+            background: rgba(255, 193, 7, 0.5);
+            color: #1a1a1a; /* для контраста на жёлтом фоне можно оставить чёрный, но по заданию белый, поэтому уточним */
+        }
+        .zone-card.red .zone-badge {
+            background: rgba(244, 67, 54, 0.5);
+        }
+
+        /* Но по условию "сделай везде одинаковый белый цвет шрифта", поэтому переопределяем для жёлтой зоны */
+        .zone-card.yellow .zone-badge {
+            color: #ffffff;
+        }
+
+        .zone-list {
+            list-style: none;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+            height: 100%;
+        }
+
+        .zone-list li {
+            font-size: 16px;
+            color: var(--text-primary);
+            line-height: 1.4;
+            padding-left: 24px;
+            position: relative;
+        }
+
+        .zone-list li .gray-text {
+            color: var(--text-secondary);
+        }
+
+        .zone-list li .symbol {
+            position: absolute;
+            left: 0;
+            font-weight: bold;
+        }
+
+        .zone-card.green .zone-list li .symbol { color: var(--green); }
+        .zone-card.yellow .zone-list li .symbol { color: var(--yellow); }
+        .zone-card.red .zone-list li .symbol { color: var(--red); }
+
+        .info-block,
+        .zone-example {
+            padding: 6px 12px;
+            font-size: 15px;
+            color: var(--text-primary);
+            line-height: 1.4;
+            margin: 0;
+            display: flex;
+            align-items: flex-start;
+            height: 100%;
+            box-sizing: border-box;
+            background: transparent;
+        }
+
+        .zone-example {
+            border-left: 3px solid;
+            background: transparent;
+        }
+
+        .zone-card.green .zone-example { border-left-color: var(--green); }
+        .zone-card.yellow .zone-example { border-left-color: var(--yellow); }
+        .zone-card.red .zone-example { border-left-color: var(--red); }
+
+        .scheme-block {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            flex-wrap: wrap;
+            padding: 10px 0;
+            animation: fadeIn 0.8s ease 0.8s forwards;
+            opacity: 0;
+            flex: 0 0 auto;
+        }
+
+        .scheme-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 16px;
+            color: var(--text-primary);
+            background: rgba(0,0,0,0.3);
+            padding: 6px 14px;
+            border-radius: 6px;
+        }
+
+        .scheme-item .emoji {
+            font-size: 24px;
+        }
+
+        .scheme-arrow {
+            font-size: 20px;
+            color: var(--accent-orange);
+        }
+
+        .practice-block {
+            background: rgba(45, 45, 45, 0.6);
+            padding: 14px 25px;
+            border-radius: 12px;
+            border-left: 4px solid var(--accent-orange);
+            animation: fadeIn 0.8s ease 1.0s forwards;
+            opacity: 0;
+            margin-top: auto;
+            transition: transform 0.3s ease, box-shadow 0.3s ease, background 0.3s ease;
+        }
+
+        .practice-block:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 15px 30px rgba(255, 107, 0, 0.3);
+            background: rgba(45, 45, 45, 0.85);
+        }
+
+        .practice-label {
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 700;
+            font-size: 14px;
+            color: var(--accent-orange);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 4px;
+        }
+
+        .practice-text {
+            font-size: 16px;
+            color: var(--text-primary);
+            line-height: 1.6;
+        }
+
+        .practice-text strong {
+            color: var(--accent-orange);
+        }
+
+        .practice-text .source {
+            color: var(--text-secondary);
+            font-style: italic;
+            font-size: 14px;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes slideInUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .navigation {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            display: flex;
+            gap: 15px;
+            z-index: 1000;
+            align-items: center;
+        }
+
+        .nav-button {
+            width: 80px;
+            height: 45px;
+            border-radius: 8px;
+            background: var(--accent-orange);
+            border: none;
+            color: white;
+            font-size: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .nav-button:hover {
+            background: var(--accent-orange-light);
+            transform: scale(1.1);
+        }
+
+        .nav-button:disabled {
+            background: var(--bg-tertiary);
+            cursor: not-allowed;
+            opacity: 0.5;
+        }
+
+        .progress-bar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: var(--bg-tertiary);
+            z-index: 1000;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: var(--accent-orange);
+            width: 81.48%;
+            transition: width 0.3s ease;
+        }
+
+        .slide-counter {
+            font-family: 'Montserrat', sans-serif;
+            font-size: 16px;
+            color: var(--text-secondary);
+            margin-right: 15px;
+            display: inline-block;
+            vertical-align: middle;
+        }
+
+        audio {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="progress-bar">
+        <div class="progress-fill"></div>
+    </div>
+
+    <div class="navigation">
+        <span class="slide-counter">22 / 27</span>
+        <button class="nav-button" onclick="window.location.href='slide_21.html'">←</button>
+        <button class="nav-button" id="playBtn" onclick="playAudio()">▶</button>
+        <button class="nav-button" onclick="window.location.href='slide_23.html'">→</button>
+    </div>
+
+    <div class="slide">
+        <div class="slide-background"></div>
+        <div class="slide-content">
+            <h1 class="slide-title">Безопасность данных: что можно, а что нельзя отправлять в LLM</h1>
+
+            <div class="zones-grid">
+                <!-- Зелёная зона -->
+                <div class="zone-card green">
+                    <div class="zone-badge">✅ Можно отправлять</div>
+                    <ul class="zone-list">
+                        <li><span class="symbol">✔</span> Обезличенные статистические данные <span class="gray-text">(агрегированные, без привязки к деталям)</span></li>
+                        <li><span class="symbol">✔</span> Публичные стандарты и данные из интернета <span class="gray-text">(ГОСТы, СНиП, ISO)</span></li>
+                        <li><span class="symbol">✔</span> Общие инженерные задачи <span class="gray-text">(расчёт без указания конкретной детали и проекта)</span></li>
+                        <li><span class="symbol">✔</span> Учебные примеры и тестовые данные</li>
+                    </ul>
+                    <div class="info-block">Допускается использование публичных LLM</div>
+                    <div class="zone-example">Пример: «Извлеки требования к контактной сварке из ГОСТ Р ИСО 14273»</div>
+                </div>
+
+                <!-- Жёлтая зона -->
+                <div class="zone-card yellow">
+                    <div class="zone-badge">⚠️ Требует согласования</div>
+                    <ul class="zone-list">
+                        <li><span class="symbol">⚠</span> Внутренние регламенты и процедуры</li>
+                        <li><span class="symbol">⚠</span> Технические требования к оборудованию <span class="gray-text">(без коммерческих условий)</span></li>
+                        <li><span class="symbol">⚠</span> Отчёты о дефектах <span class="gray-text">(без указания VIN и конкретных партий)</span></li>
+                    </ul>
+                    <div class="info-block">Правило: если сомневаешься — не отправляй. Используй корпоративную LLM</div>
+                    <div class="zone-example">Пример: «Проанализируй внутренний регламент по контролю качества сварных швов» → ТОЛЬКО КОРПОРАТИВНАЯ LLM</div>
+                </div>
+
+                <!-- Красная зона -->
+                <div class="zone-card red">
+                    <div class="zone-badge">❌ Запрещено</div>
+                    <ul class="zone-list">
+                        <li><span class="symbol">✖</span> Конструкторская документация <span class="gray-text">(3D-модели и чертежи)</span></li>
+                        <li><span class="symbol">✖</span> Коммерческая тайна <span class="gray-text">(себестоимость, финансовые показатели, стратегические планы)</span></li>
+                        <li><span class="symbol">✖</span> Персональные данные сотрудников и клиентов</li>
+                        <li><span class="symbol">✖</span> Патенты и ноу-хау до подачи заявки</li>
+                        <li><span class="symbol">✖</span> Код проприетарного ПО</li>
+                    </ul>
+                    <div class="info-block">4% компаний столкнулись с утечкой данных через публичные LLM (McKinsey, 2024)</div>
+                    <div class="zone-example">Пример: «Проанализируй модель кузова Весты и предложи оптимизацию» → ЗАПРЕЩЕНО</div>
+                </div>
+            </div>
+
+            <div class="scheme-block">
+                <div class="scheme-item"><span class="emoji">📊</span> Данные</div>
+                <span class="scheme-arrow">→</span>
+                <div class="scheme-item"><span class="emoji">🔒</span> Фильтр безопасности</div>
+                <span class="scheme-arrow">→</span>
+                <div class="scheme-item"><span class="emoji">🧠</span> LLM</div>
+            </div>
+
+            <div class="practice-block">
+                <div class="practice-label">💡 Практическая рекомендация</div>
+                <div class="practice-text">
+                    Перед отправкой любого запроса задайте себе вопрос: <strong>«Если этот запрос увидит конкурент, что я потеряю?»</strong><br>
+                    <span class="source">Источники: McKinsey State of AI 2024; политики безопасности OpenAI, Anthropic, Сбер</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <audio id="audio-22" src="audio/slide_22_audio.mp3"></audio>
+
+    <script>
+        function playAudio() {
+            const audio = document.getElementById('audio-22');
+            if (audio) {
+                audio.play().catch(e => console.log('Audio play failed:', e));
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const audio = document.getElementById('audio-22');
+            if (audio) {
+                audio.play().catch(e => console.log('Audio play failed:', e));
+            }
+        });
+    </script>
+</body>
+</html>

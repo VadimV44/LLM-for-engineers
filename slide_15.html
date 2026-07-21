@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Техники промптинга: Few-shot, Chain-of-Thought, Tree-of-Thought</title>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;900&family=Roboto:wght@300;400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-primary: #1a1a1a;
+            --bg-secondary: #2d2d2d;
+            --bg-tertiary: #3d3d3d;
+            --accent-orange: #ff6b00;
+            --accent-orange-light: #ff8533;
+            --text-primary: #ffffff;
+            --text-secondary: #b0b0b0;
+            --link-blue: #4a9eff;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Roboto', sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            overflow: hidden;
+            height: 100vh;
+        }
+
+        .slide {
+            width: 100%;
+            height: 100vh;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            padding: 60px 80px 100px 80px;
+        }
+
+        .slide-background {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: url('images/slide_15_background.jpg');
+            background-size: cover;
+            background-position: center;
+            opacity: 0.3;
+            z-index: 0;
+        }
+
+        .slide-content {
+            position: relative;
+            z-index: 1;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .slide-title {
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 700;
+            font-size: 42px;
+            color: var(--text-primary);
+            margin-bottom: 40px;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .techniques-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            flex: 0 0 auto;
+        }
+
+        .tech-card {
+            background: rgba(45, 45, 45, 0.6);
+            padding: 18px 18px 15px;
+            border-radius: 12px;
+            border-top: 4px solid var(--accent-orange);
+            animation: slideInUp 0.6s ease forwards;
+            opacity: 0;
+            transition: transform 0.3s ease, box-shadow 0.3s ease, background 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+            height: 100%;
+        }
+
+        .tech-card:hover {
+            transform: translateY(-6px);
+            box-shadow: 0 15px 30px rgba(255, 107, 0, 0.3);
+            background: rgba(45, 45, 45, 0.85);
+        }
+
+        .tech-card:nth-child(1) { animation-delay: 0.1s; }
+        .tech-card:nth-child(2) { animation-delay: 0.2s; }
+        .tech-card:nth-child(3) { animation-delay: 0.3s; }
+
+        .tech-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 10px;
+        }
+
+        .tech-icon {
+            font-size: 32px;
+            line-height: 1;
+        }
+
+        .tech-name {
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 700;
+            font-size: 22px;
+            color: var(--accent-orange);
+        }
+
+        .tech-description {
+            font-size: 16px; /* исправлено */
+            color: var(--text-primary);
+            line-height: 1.5;
+            margin-bottom: 8px;
+        }
+
+        .tech-sub {
+            font-size: 16px; /* исправлено */
+            color: var(--text-secondary);
+            margin-bottom: 4px;
+        }
+
+        .tech-sub strong {
+            font-weight: normal;
+            color: var(--text-primary);
+        }
+
+        .tech-example {
+            font-size: 16px; /* исправлено */
+            color: var(--text-secondary);
+            font-style: italic;
+            margin-top: 4px;
+            margin-bottom: 10px;
+            line-height: 1.4;
+        }
+
+        .tech-example .label {
+            color: var(--text-primary);
+            font-style: normal;
+            font-weight: normal;
+        }
+
+        .prompt-block {
+            font-size: 16px; /* добавлено для явности */
+            color: var(--text-secondary);
+            line-height: 1.6;
+            margin-top: 4px;
+            margin-bottom: 10px;
+            flex-grow: 1;
+        }
+
+        .prompt-block .label-marker {
+            color: #ffffff;
+            font-weight: normal;
+        }
+
+        .fact-item {
+            background: rgba(255, 107, 0, 0.1);
+            padding: 10px 12px;
+            border-radius: 6px;
+            border-left: 3px solid var(--accent-orange);
+            text-align: center;
+            margin-top: auto;
+        }
+
+        .fact-item .number {
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 900;
+            font-size: 24px;
+            color: var(--accent-orange);
+            display: block;
+            margin-bottom: 2px;
+        }
+
+        .fact-item .description {
+            font-size: 16px;
+            color: var(--text-secondary);
+            line-height: 1.3;
+        }
+
+        .scheme-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            flex: 0 0 auto;
+            animation: fadeIn 0.8s ease 0.8s forwards;
+            opacity: 0;
+        }
+
+        .scheme-group {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            background: rgba(0,0,0,0.2);
+            padding: 8px 10px;
+            border-radius: 8px;
+            font-size: 16px;
+            color: var(--text-primary);
+        }
+
+        .scheme-group .scheme-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            background: transparent;
+            padding: 0;
+            border: none;
+        }
+
+        .scheme-group .scheme-item .emoji {
+            font-size: 24px;
+        }
+
+        .scheme-arrow {
+            font-size: 20px;
+            color: var(--accent-orange);
+        }
+
+        .bottom-section {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            flex: 0 0 auto;
+        }
+
+        .practice-block {
+            background: rgba(45, 45, 45, 0.6);
+            padding: 14px 25px;
+            border-radius: 12px;
+            border-left: 4px solid var(--accent-orange);
+            animation: fadeIn 0.8s ease 1.0s forwards;
+            opacity: 0;
+        }
+
+        .practice-label {
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 700;
+            font-size: 14px;
+            color: var(--accent-orange);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 4px;
+        }
+
+        .practice-text {
+            font-size: 16px;
+            color: var(--text-primary);
+            line-height: 1.5;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes slideInUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .navigation {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            display: flex;
+            gap: 15px;
+            z-index: 1000;
+            align-items: center;
+        }
+
+        .nav-button {
+            width: 80px;
+            height: 45px;
+            border-radius: 8px;
+            background: var(--accent-orange);
+            border: none;
+            color: white;
+            font-size: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .nav-button:hover {
+            background: var(--accent-orange-light);
+            transform: scale(1.1);
+        }
+
+        .nav-button:disabled {
+            background: var(--bg-tertiary);
+            cursor: not-allowed;
+            opacity: 0.5;
+        }
+
+        .progress-bar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: var(--bg-tertiary);
+            z-index: 1000;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: var(--accent-orange);
+            width: 55.55%;
+            transition: width 0.3s ease;
+        }
+
+        .slide-counter {
+            font-family: 'Montserrat', sans-serif;
+            font-size: 16px;
+            color: var(--text-secondary);
+            margin-right: 15px;
+            display: inline-block;
+            vertical-align: middle;
+        }
+
+        audio {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="progress-bar">
+        <div class="progress-fill"></div>
+    </div>
+
+    <div class="navigation">
+        <span class="slide-counter">15 / 27</span>
+        <button class="nav-button" onclick="window.location.href='slide_14.html'">←</button>
+        <button class="nav-button" id="playBtn" onclick="playAudio()">▶</button>
+        <button class="nav-button" onclick="window.location.href='slide_16.html'">→</button>
+    </div>
+
+    <div class="slide">
+        <div class="slide-background"></div>
+        <div class="slide-content">
+            <h1 class="slide-title">Техники промптинга: Few-shot, Chain-of-Thought, Tree-of-Thought</h1>
+
+            <div class="techniques-grid">
+                <!-- Few-shot -->
+                <div class="tech-card">
+                    <div class="tech-header">
+                        <span class="tech-icon">📋</span>
+                        <span class="tech-name">Few-shot</span>
+                    </div>
+                    <div class="tech-description">Даёте модели 2-3 примера, она продолжает в том же стиле.</div>
+                    <div class="tech-sub"><strong>Применение:</strong> генерация документов по шаблону, анализ дефектов по классификатору</div>
+                    <div class="tech-example">
+                        <span class="label">Пример:</span> «Вот 3 примера отчётов по дефектам. Составь четвёртый по аналогии»
+                    </div>
+                    <div class="prompt-block">
+                        <span class="label-marker">📋 FEW-SHOT (ТЕХНОЛОГИЧЕСКАЯ КАРТА)</span><br>
+                        <span class="label-marker">Вот 3 примера технологических карт контактной сварки:</span><br>
+                        <span class="label-marker">1.</span> Карта 1: Деталь — кронштейн, материал — сталь 08пс, толщина 1.5 мм, ток 8000 А, время 0.8 сек, усилие 250 даН.<br>
+                        <span class="label-marker">2.</span> Карта 2: Деталь — усилитель, материал — сталь 09Г2С, толщина 2.0 мм, ток 9500 А, время 1.0 сек, усилие 300 даН.<br>
+                        <span class="label-marker">3.</span> Карта 3: Деталь — панель, материал — сталь 08пс, толщина 1.2 мм, ток 7500 А, время 0.7 сек, усилие 220 даН.<br>
+                        <span class="label-marker">Составь карту 4</span> для детали 'лонжерон', материал — сталь 09Г2С, толщина 2.5 мм.
+                    </div>
+                    <div class="fact-item">
+                        <span class="number">+60%</span>
+                        <span class="description">точность генерации по шаблону с Few-shot</span>
+                    </div>
+                </div>
+
+                <!-- Chain-of-Thought -->
+                <div class="tech-card">
+                    <div class="tech-header">
+                        <span class="tech-icon">🔗</span>
+                        <span class="tech-name">Chain-of-Thought</span>
+                    </div>
+                    <div class="tech-description">Просите модель рассуждать пошагово.</div>
+                    <div class="tech-sub"><strong>Применение:</strong> сложные расчёты, FMEA-анализ, причинно-следственный анализ</div>
+                    <div class="tech-example">
+                        <span class="label">Пример:</span> «Реши задачу пошагово. Сначала определи причины, потом последствия, потом приоритеты»
+                    </div>
+                    <div class="prompt-block">
+                        <span class="label-marker">🔗 CHAIN-OF-THOUGHT (FMEA/PFMEA)</span><br>
+                        <span class="label-marker">Проведи FMEA-анализ процесса контактной сварки кузовных деталей. Реши пошагово:</span><br>
+                        1. <span class="label-marker">Шаг 1.</span> Перечисли возможные дефекты (минимум 5).<br>
+                        2. <span class="label-marker">Шаг 2.</span> Для каждого дефекта определи причины (минимум 3 на дефект).<br>
+                        3. <span class="label-marker">Шаг 3.</span> Для каждой причины оцени последствия (влияние на качество, безопасность, стоимость).<br>
+                        4. <span class="label-marker">Шаг 4.</span> Рассчитай приоритет (RPN) по формуле: тяжесть × вероятность × обнаруживаемость.<br>
+                        5. <span class="label-marker">Шаг 5.</span> Предложи корректирующие мероприятия для топ-3 причин с максимальным RPN.
+                    </div>
+                    <div class="fact-item">
+                        <span class="number">−40%</span>
+                        <span class="description">математических ошибок с Chain-of-Thought</span>
+                    </div>
+                </div>
+
+                <!-- Tree-of-Thought -->
+                <div class="tech-card">
+                    <div class="tech-header">
+                        <span class="tech-icon">🌳</span>
+                        <span class="tech-name">Tree-of-Thought</span>
+                    </div>
+                    <div class="tech-description">Модель рассматривает несколько вариантов решения.</div>
+                    <div class="tech-sub"><strong>Применение:</strong> выбор оборудования, оптимизация процессов, оценка рисков</div>
+                    <div class="tech-example">
+                        <span class="label">Пример:</span> «Рассмотри 3 варианта решения. Для каждого укажи плюсы, минусы, риски. Выбери оптимальный»
+                    </div>
+                    <div class="prompt-block">
+                        <span class="label-marker">🌳 TREE-OF-THOUGHT (ВЫБОР ОБОРУДОВАНИЯ)</span><br>
+                        <span class="label-marker">Нужно выбрать оборудование для сварки кузовных деталей. Рассмотри 2 варианта:</span><br>
+                        <span class="label-marker">Вариант 1:</span> Сварочный робот с 6 осями.<br>
+                        <span class="label-marker">Вариант 2:</span> Подвесные контактные клещи с ручной подачей.<br>
+                        <span class="label-marker">Для каждого варианта укажи:</span> производительность, точность, стоимость, сроки поставки, требования к персоналу, гибкость.<br>
+                        <span class="label-marker">Потом сравни по критериям:</span> QCD (качество, стоимость, сроки). Выбери оптимальный вариант с обоснованием.
+                    </div>
+                    <div class="fact-item">
+                        <span class="number">+35%</span>
+                        <span class="description">качество выбора с Tree-of-Thought</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="scheme-grid">
+                <div class="scheme-group">
+                    <span class="scheme-item"><span class="emoji">📄</span> Простая задача</span>
+                    <span class="scheme-arrow">➔</span>
+                    <span class="scheme-item"><span class="emoji">📋</span> Few-shot</span>
+                </div>
+                <div class="scheme-group">
+                    <span class="scheme-item"><span class="emoji">📊</span> Сложный анализ</span>
+                    <span class="scheme-arrow">➔</span>
+                    <span class="scheme-item"><span class="emoji">🔗</span> CoT</span>
+                </div>
+                <div class="scheme-group">
+                    <span class="scheme-item"><span class="emoji">🎯</span> Выбор варианта</span>
+                    <span class="scheme-arrow">➔</span>
+                    <span class="scheme-item"><span class="emoji">🌳</span> ToT</span>
+                </div>
+            </div>
+
+            <div class="bottom-section">
+                <div class="practice-block">
+                    <div class="practice-label">💡 Практическая рекомендация</div>
+                    <div class="practice-text">
+                        Комбинируйте техники. Например, Few-shot + CoT для генерации документа с анализом.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <audio id="audio-15" src="audio/slide_15_audio.mp3"></audio>
+
+    <script>
+        function playAudio() {
+            const audio = document.getElementById('audio-15');
+            if (audio) {
+                audio.play().catch(e => console.log('Audio play failed:', e));
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const audio = document.getElementById('audio-15');
+            if (audio) {
+                audio.play().catch(e => console.log('Audio play failed:', e));
+            }
+        });
+    </script>
+</body>
+</html>

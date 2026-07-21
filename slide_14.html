@@ -1,0 +1,540 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Анатомия идеального промпта: РКЗФО</title>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;900&family=Roboto:wght@300;400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-primary: #1a1a1a;
+            --bg-secondary: #2d2d2d;
+            --bg-tertiary: #3d3d3d;
+            --accent-orange: #ff6b00;
+            --accent-orange-light: #ff8533;
+            --text-primary: #ffffff;
+            --text-secondary: #b0b0b0;
+            --link-blue: #4a9eff;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Roboto', sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            overflow: hidden;
+            height: 100vh;
+        }
+
+        .slide {
+            width: 100%;
+            height: 100vh;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            padding: 60px 80px 100px 80px;
+        }
+
+        .slide-background {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: url('images/slide_14_background.jpg');
+            background-size: cover;
+            background-position: center;
+            opacity: 0.3;
+            z-index: 0;
+        }
+
+        .slide-content {
+            position: relative;
+            z-index: 1;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .slide-title {
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 700;
+            font-size: 42px;
+            color: var(--text-primary);
+            margin-bottom: 40px;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .label {
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 700;
+            font-size: 16px;
+            color: var(--accent-orange);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .rkzfo-metrics-row {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 30px;
+            flex: 0 0 auto;
+        }
+
+        .rkzfo-block {
+            background: rgba(45, 45, 45, 0.6);
+            padding: 18px 20px;
+            border-radius: 12px;
+            border-left: 4px solid var(--accent-orange);
+            animation: slideInLeft 0.6s ease forwards;
+            opacity: 0;
+            transition: transform 0.3s ease, box-shadow 0.3s ease, background 0.3s ease;
+        }
+
+        .rkzfo-block:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 15px 30px rgba(255, 107, 0, 0.3);
+            background: rgba(45, 45, 45, 0.85);
+        }
+
+        .rkzfo-label {
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 700;
+            font-size: 16px;
+            color: var(--accent-orange);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .rkzfo-list {
+            display: flex;
+            flex-direction: column;
+            gap: 2px; /* уменьшен gap между элементами */
+        }
+
+        .rkzfo-item {
+            display: grid;
+            grid-template-columns: 60px 160px 1fr;
+            gap: 15px;
+            padding: 6px 15px; /* уменьшен вертикальный padding */
+            border-bottom: 1px solid rgba(255, 107, 0, 0.2);
+            align-items: center;
+            transition: background 0.3s ease, border-radius 0.3s ease;
+        }
+
+        .rkzfo-item:last-child {
+            border-bottom: none;
+        }
+
+        .rkzfo-item:hover {
+            background: rgba(255, 107, 0, 0.05);
+            border-radius: 8px;
+        }
+
+        .rkzfo-letter {
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 900;
+            font-size: 36px;
+            color: var(--accent-orange);
+            text-align: center;
+            line-height: 1; /* уменьшена высота строки */
+        }
+
+        .rkzfo-name {
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 600;
+            font-size: 20px;
+            color: var(--text-primary);
+            line-height: 1.2; /* уменьшена высота строки */
+        }
+
+        .rkzfo-example {
+            font-size: 16px;
+            color: var(--text-secondary);
+            line-height: 1.2; /* уменьшена высота строки (было 1.4) */
+        }
+
+        .rkzfo-example .label-marker {
+            color: #ffffff;
+            font-weight: normal;
+        }
+
+        .metrics-vertical {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            justify-content: center;
+        }
+
+        .metric-item {
+            background: rgba(45, 45, 45, 0.6);
+            padding: 16px 20px;
+            border-radius: 12px;
+            border-left: 4px solid var(--accent-orange);
+            animation: slideInRight 0.6s ease forwards;
+            opacity: 0;
+            transition: transform 0.3s ease, box-shadow 0.3s ease, background 0.3s ease;
+            display: grid;
+            grid-template-columns: auto 1fr;
+            align-items: center;
+            gap: 24px;
+        }
+
+        .metric-item:hover {
+            transform: translateX(-6px);
+            box-shadow: 0 10px 25px rgba(255, 107, 0, 0.3);
+            background: rgba(45, 45, 45, 0.85);
+        }
+
+        .metric-item:nth-child(1) { animation-delay: 0.2s; }
+        .metric-item:nth-child(2) { animation-delay: 0.4s; }
+        .metric-item:nth-child(3) { animation-delay: 0.6s; }
+
+        .metric-item .number {
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 900;
+            font-size: 28px;
+            color: var(--accent-orange);
+            white-space: nowrap;
+            text-align: left;
+            min-width: 80px;
+        }
+
+        .metric-item .description {
+            font-size: 16px;
+            color: var(--text-secondary);
+            line-height: 1.5;
+            text-align: left;
+            word-break: break-word;
+        }
+
+        .prompts-block {
+            background: rgba(45, 45, 45, 0.6);
+            padding: 18px 22px;
+            border-radius: 12px;
+            border-left: 4px solid var(--accent-orange);
+            animation: slideInUp 0.8s ease 0.6s forwards;
+            opacity: 0;
+            transition: transform 0.3s ease, box-shadow 0.3s ease, background 0.3s ease;
+            flex: 1 1 auto;
+            min-height: 0;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+        }
+
+        .prompts-block:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 15px 30px rgba(255, 107, 0, 0.3);
+            background: rgba(45, 45, 45, 0.85);
+        }
+
+        .prompts-header {
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 700;
+            font-size: 16px;
+            color: var(--accent-orange);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 2px;
+            flex-shrink: 0;
+        }
+
+        .prompt-item {
+            border-bottom: 1px solid rgba(255, 107, 0, 0.15);
+            padding-bottom: 12px;
+        }
+
+        .prompt-item:last-child {
+            border-bottom: none;
+            padding-bottom: 0;
+        }
+
+        .prompt-title {
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 700;
+            font-size: 16px;
+            color: var(--accent-orange);
+            margin-bottom: 4px;
+        }
+
+        .prompt-line {
+            font-size: 16px;
+            color: var(--text-secondary);
+            line-height: 1.5;
+        }
+
+        .prompt-line .label-marker {
+            color: var(--text-secondary);
+            font-weight: 400;
+        }
+
+        .prompt-line .value {
+            color: var(--text-primary);
+        }
+
+        .practice-block {
+            background: rgba(45, 45, 45, 0.6);
+            padding: 14px 20px;
+            border-radius: 12px;
+            border-left: 4px solid var(--accent-orange);
+            animation: fadeIn 0.8s ease 1.2s forwards;
+            opacity: 0;
+            flex: 0 0 auto;
+            transition: transform 0.3s ease, box-shadow 0.3s ease, background 0.3s ease;
+        }
+
+        .practice-block:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 15px 30px rgba(255, 107, 0, 0.3);
+            background: rgba(45, 45, 45, 0.85);
+        }
+
+        .practice-text {
+            font-size: 16px;
+            color: var(--text-primary);
+            line-height: 1.6;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes slideInLeft {
+            from { opacity: 0; transform: translateX(-50px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        @keyframes slideInRight {
+            from { opacity: 0; transform: translateX(50px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        @keyframes slideInUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Navigation */
+        .navigation {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            display: flex;
+            gap: 15px;
+            z-index: 1000;
+            align-items: center;
+        }
+
+        .nav-button {
+            width: 80px;
+            height: 45px;
+            border-radius: 8px;
+            background: var(--accent-orange);
+            border: none;
+            color: white;
+            font-size: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .nav-button:hover {
+            background: var(--accent-orange-light);
+            transform: scale(1.1);
+        }
+
+        .nav-button:disabled {
+            background: var(--bg-tertiary);
+            cursor: not-allowed;
+            opacity: 0.5;
+        }
+
+        .progress-bar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: var(--bg-tertiary);
+            z-index: 1000;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: var(--accent-orange);
+            width: 51.85%; /* 14/27 */
+            transition: width 0.3s ease;
+        }
+
+        .slide-counter {
+            font-family: 'Montserrat', sans-serif;
+            font-size: 16px;
+            color: var(--text-secondary);
+            margin-right: 15px;
+            display: inline-block;
+            vertical-align: middle;
+        }
+
+        audio {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="progress-bar">
+        <div class="progress-fill"></div>
+    </div>
+
+    <div class="navigation">
+        <span class="slide-counter">14 / 27</span>
+        <button class="nav-button" onclick="window.location.href='slide_13.html'">←</button>
+        <button class="nav-button" id="playBtn" onclick="playAudio()">▶</button>
+        <button class="nav-button" onclick="window.location.href='slide_15.html'">→</button>
+    </div>
+
+    <div class="slide">
+        <div class="slide-background"></div>
+        <div class="slide-content">
+            <h1 class="slide-title">Анатомия идеального промпта: РКЗФО</h1>
+
+            <div class="rkzfo-metrics-row">
+                <div class="rkzfo-block">
+                    <div class="rkzfo-label">🎯 Идеальный промпт</div>
+                    <div class="rkzfo-list">
+                        <div class="rkzfo-item">
+                            <div class="rkzfo-letter">Р</div>
+                            <div class="rkzfo-name">Роль</div>
+                            <div class="rkzfo-example"><span class="label-marker">Пример:</span> «Ты — инженер-технолог цеха сварки с 15-летним стажем»</div>
+                        </div>
+                        <div class="rkzfo-item">
+                            <div class="rkzfo-letter">К</div>
+                            <div class="rkzfo-name">Контекст</div>
+                            <div class="rkzfo-example"><span class="label-marker">Пример:</span> «Подготовь отчёт по дефектам сварных швов за К1 2026 в цехе сварки»</div>
+                        </div>
+                        <div class="rkzfo-item">
+                            <div class="rkzfo-letter">З</div>
+                            <div class="rkzfo-name">Задача</div>
+                            <div class="rkzfo-example"><span class="label-marker">Пример:</span> «Проанализируй данные по дефектам, выяви топ-3 причины, предложи корректирующие мероприятия»</div>
+                        </div>
+                        <div class="rkzfo-item">
+                            <div class="rkzfo-letter">Ф</div>
+                            <div class="rkzfo-name">Формат</div>
+                            <div class="rkzfo-example"><span class="label-marker">Пример:</span> «Результат: отчёт в формате Excel с таблицами и выводами»</div>
+                        </div>
+                        <div class="rkzfo-item">
+                            <div class="rkzfo-letter">О</div>
+                            <div class="rkzfo-name">Ограничения</div>
+                            <div class="rkzfo-example"><span class="label-marker">Пример:</span> «Объём: не более 5 страниц. Используй только данные из прикреплённого файла. Ничего не выдумывай»</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="metrics-vertical">
+                    <div class="metric-item">
+                        <span class="number">+40%</span>
+                        <span class="description">точнее результат, чем при случайном запросе</span>
+                    </div>
+                    <div class="metric-item">
+                        <span class="number">2–3 мин</span>
+                        <span class="description">время на составление хорошего промпта</span>
+                    </div>
+                    <div class="metric-item">
+                        <span class="number">20–30 мин</span>
+                        <span class="description">экономия времени на доработку результата</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="prompts-block">
+                <div class="prompts-header">✅ Примеры промптов</div>
+
+                <div class="prompt-item">
+                    <div class="prompt-title">📋 Пример FMEA-анализа</div>
+                    <div class="prompt-line">
+                        <span class="label-marker">Роль:</span> <span class="value">«Ты — инженер по качеству с опытом проведения FMEA-анализа.»</span>
+                    </div>
+                    <div class="prompt-line">
+                        <span class="label-marker">Контекст:</span> <span class="value">«Работаю в цеху сварки кузовов.»</span>
+                    </div>
+                    <div class="prompt-line">
+                        <span class="label-marker">Задача:</span> <span class="value">«Нужно провести FMEA-анализ процесса контактной сварки низкоуглеродистой стали толщиной 1.5 мм. Выяви возможные дефекты: выплеск, непровар, поры. Для каждого дефекта укажи: причины, последствия, приоритет (RPN), корректирующие мероприятия.»</span>
+                    </div>
+                    <div class="prompt-line">
+                        <span class="label-marker">Формат:</span> <span class="value">«Таблица.»</span>
+                    </div>
+                    <div class="prompt-line">
+                        <span class="label-marker">Ограничения:</span> <span class="value">«Используй только стандартные методы FMEA, не выдумывай параметры.»</span>
+                    </div>
+                </div>
+
+                <div class="prompt-item">
+                    <div class="prompt-title">📊 Пример экономического расчёта</div>
+                    <div class="prompt-line">
+                        <span class="label-marker">Роль:</span> <span class="value">«Ты — инженер-экономист производственного предприятия.»</span>
+                    </div>
+                    <div class="prompt-line">
+                        <span class="label-marker">Контекст:</span> <span class="value">«Работаю над проектом модернизации сварочной линии.»</span>
+                    </div>
+                    <div class="prompt-line">
+                        <span class="label-marker">Задача:</span> <span class="value">«Нужно рассчитать экономическую эффективность замены контактных сварочных клещей на робототехнический комплекс. Исходные данные: стоимость оборудования 5 млн руб., экономия на трудозатратах 1.2 млн руб./год, снижение брака на 15%.»</span>
+                    </div>
+                    <div class="prompt-line">
+                        <span class="label-marker">Формат:</span> <span class="value">«Отчёт с расчётом срока окупаемости, NPV, ROI.»</span>
+                    </div>
+                    <div class="prompt-line">
+                        <span class="label-marker">Ограничения:</span> <span class="value">«Используй стандартные формулы, укажи допущения.»</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="practice-block">
+                <div class="label">💡 Практика</div>
+                <div class="practice-text">
+                    Попросите LLM придумать мнемоническую аббревиатуру вместо РКЗФО.
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <audio id="audio-14" src="audio/slide_14_audio.mp3"></audio>
+
+    <script>
+        function playAudio() {
+            const audio = document.getElementById('audio-14');
+            if (audio) {
+                audio.play().catch(e => console.log('Audio play failed:', e));
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const audio = document.getElementById('audio-14');
+            if (audio) {
+                audio.play().catch(e => console.log('Audio play failed:', e));
+            }
+        });
+    </script>
+</body>
+</html>
