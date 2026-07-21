@@ -130,7 +130,7 @@
 
         .task-list {
             list-style: none;
-            font-size: 16px; /* исправлено с 13px на 16px */
+            font-size: 16px;
             color: var(--text-secondary);
             line-height: 1.6;
             flex-grow: 1;
@@ -224,43 +224,7 @@
             to { opacity: 1; transform: translateY(0); }
         }
 
-        /* Navigation */
-        .navigation {
-            position: fixed;
-            bottom: 30px;
-            right: 30px;
-            display: flex;
-            gap: 15px;
-            z-index: 1000;
-            align-items: center;
-        }
-
-        .nav-button {
-            width: 80px;
-            height: 45px;
-            border-radius: 8px;
-            background: var(--accent-orange);
-            border: none;
-            color: white;
-            font-size: 20px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .nav-button:hover {
-            background: var(--accent-orange-light);
-            transform: scale(1.1);
-        }
-
-        .nav-button:disabled {
-            background: var(--bg-tertiary);
-            cursor: not-allowed;
-            opacity: 0.5;
-        }
-
+        /* === ВЕРХНИЙ ПРОГРЕСС-БАР === */
         .progress-bar {
             position: fixed;
             top: 0;
@@ -274,17 +238,125 @@
         .progress-fill {
             height: 100%;
             background: var(--accent-orange);
-            width: 25.9%; /* 7/27 */
+            width: 25.9%;
             transition: width 0.3s ease;
         }
 
-        .slide-counter {
-            font-family: 'Montserrat', sans-serif;
+        /* === НОВЫЙ БЛОК УПРАВЛЕНИЯ === */
+        .controls-container {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(0, 0, 0, 0.75);
+            padding: 6px 14px;
+            border-radius: 30px;
+            z-index: 1000;
+            backdrop-filter: blur(4px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+        }
+
+        .controls-container .ctrl-btn {
+            width: 34px;
+            height: 34px;
+            border-radius: 50%;
+            background: var(--accent-orange) !important;
+            color: #fff !important;
+            border: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
             font-size: 16px;
+            cursor: pointer;
+            transition: transform 0.1s;
+            outline: none;
+            font-weight: 500;
+            padding: 0;
+            line-height: 1;
+            box-shadow: none !important;
+            -webkit-appearance: none;
+            appearance: none;
+        }
+
+        .controls-container .ctrl-btn:hover,
+        .controls-container .ctrl-btn:active,
+        .controls-container .ctrl-btn:focus {
+            background: var(--accent-orange) !important;
+            color: #fff !important;
+            box-shadow: none !important;
+            outline: none !important;
+            border: none !important;
+        }
+
+        .controls-container .ctrl-btn:hover {
+            background: var(--accent-orange-light) !important;
+            transform: scale(1.05);
+        }
+
+        .controls-container .ctrl-btn:active {
+            transform: scale(0.95);
+        }
+
+        .controls-container .ctrl-btn:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+            transform: none !important;
+        }
+
+        .controls-container .ctrl-btn:disabled:hover {
+            background: var(--accent-orange) !important;
+        }
+
+        .controls-container #progress-bar {
+            width: 120px;
+            height: 4px;
+            -webkit-appearance: none;
+            appearance: none;
+            background: #555;
+            border-radius: 2px;
+            outline: none;
+            cursor: pointer;
+        }
+
+        .controls-container #progress-bar::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: var(--accent-orange);
+            cursor: pointer;
+            border: none;
+        }
+
+        .controls-container #progress-bar::-moz-range-thumb {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: var(--accent-orange);
+            cursor: pointer;
+            border: none;
+        }
+
+        .controls-container .time-display {
+            font-size: 13px;
             color: var(--text-secondary);
-            margin-right: 15px;
-            display: inline-block;
-            vertical-align: middle;
+            min-width: 75px;
+            text-align: center;
+            font-variant-numeric: tabular-nums;
+            letter-spacing: 0.3px;
+        }
+
+        .controls-container .slide-counter {
+            font-size: 14px;
+            color: var(--text-secondary);
+            margin-left: 4px;
+            font-weight: 500;
+            min-width: 50px;
+            text-align: right;
         }
 
         audio {
@@ -295,14 +367,6 @@
 <body>
     <div class="progress-bar">
         <div class="progress-fill"></div>
-    </div>
-
-    <!-- Навигация: счётчик + кнопки ←, ▶, → -->
-    <div class="navigation">
-        <span class="slide-counter">7 / 27</span>
-        <button class="nav-button" onclick="window.location.href='slide_06.html'">←</button>
-        <button class="nav-button" id="playBtn" onclick="playAudio()">▶</button>
-        <button class="nav-button" onclick="window.location.href='slide_08.html'">→</button>
     </div>
 
     <div class="slide">
@@ -399,21 +463,87 @@
         </div>
     </div>
 
-    <audio id="audio-7" src="audio/slide_07_audio.mp3"></audio>
+    <!-- Аудио (переименовано в presentation-audio) -->
+    <audio id="presentation-audio" src="audio/slide_07_audio.mp3" preload="auto"></audio>
+
+    <!-- === НОВЫЙ БЛОК УПРАВЛЕНИЯ === -->
+    <div class="controls-container">
+        <!-- Назад (на slide_06) -->
+        <button class="ctrl-btn nav-btn" id="prevBtn" onclick="window.location.href='slide_06.html'">←</button>
+
+        <!-- Перезапуск -->
+        <button class="ctrl-btn" id="restart-btn" title="Начать сначала">↺</button>
+
+        <!-- Play/Pause -->
+        <button class="ctrl-btn" id="play-pause-btn" title="Play/Pause">▶</button>
+
+        <!-- Прогресс-бар -->
+        <input type="range" id="progress-bar" value="0" min="0" max="100" step="0.1">
+
+        <!-- Таймер -->
+        <div class="time-display">
+            <span id="current-time">0:00</span> / <span id="duration">0:00</span>
+        </div>
+
+        <!-- Вперёд (на slide_08) -->
+        <button class="ctrl-btn nav-btn" id="nextBtn" onclick="window.location.href='slide_08.html'">→</button>
+
+        <!-- Счётчик -->
+        <span class="slide-counter" id="slideCounter">7 / 27</span>
+    </div>
 
     <script>
-        function playAudio() {
-            const audio = document.getElementById('audio-7');
-            if (audio) {
-                audio.play().catch(e => console.log('Audio play failed:', e));
-            }
-        }
-
+        // === НОВЫЙ СКРИПТ ПЛЕЕРА (без автоперехода) ===
         document.addEventListener('DOMContentLoaded', function() {
-            const audio = document.getElementById('audio-7');
-            if (audio) {
-                audio.play().catch(e => console.log('Audio play failed:', e));
-            }
+            const audio = document.getElementById('presentation-audio');
+            if (!audio) return;
+
+            const playBtn = document.getElementById('play-pause-btn');
+            const restartBtn = document.getElementById('restart-btn');
+            const progressBar = document.getElementById('progress-bar');
+            const currentTimeEl = document.getElementById('current-time');
+            const durationEl = document.getElementById('duration');
+
+            const formatTime = (seconds) => {
+                if (isNaN(seconds)) return "0:00";
+                const m = Math.floor(seconds / 60);
+                const s = Math.floor(seconds % 60);
+                return `${m}:${s < 10 ? '0' : ''}${s}`;
+            };
+
+            playBtn.addEventListener('click', function() {
+                if (audio.paused) {
+                    audio.play();
+                    playBtn.textContent = '⏸';
+                } else {
+                    audio.pause();
+                    playBtn.textContent = '▶';
+                }
+            });
+
+            restartBtn.addEventListener('click', function() {
+                audio.currentTime = 0;
+                audio.play();
+                playBtn.textContent = '⏸';
+            });
+
+            audio.addEventListener('timeupdate', function() {
+                progressBar.value = (audio.currentTime / audio.duration) * 100;
+                currentTimeEl.textContent = formatTime(audio.currentTime);
+            });
+
+            progressBar.addEventListener('input', function() {
+                audio.currentTime = (progressBar.value / 100) * audio.duration;
+            });
+
+            audio.addEventListener('loadedmetadata', function() {
+                durationEl.textContent = formatTime(audio.duration);
+            });
+
+            // === АВТОПЕРЕХОД ОТКЛЮЧЁН ===
+            // audio.addEventListener('ended', function() {
+            //     // код перехода удалён
+            // });
         });
     </script>
 </body>
