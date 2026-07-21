@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Мировая практика внедрения ИИ: Россия</title>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;900&family=Roboto:wght@300;400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-primary: #1a1a1a;
+            --bg-secondary: #2d2d2d;
+            --bg-tertiary: #3d3d3d;
+            --accent-orange: #ff6b00;
+            --accent-orange-light: #ff8533;
+            --text-primary: #ffffff;
+            --text-secondary: #b0b0b0;
+            --link-blue: #4a9eff;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Roboto', sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            overflow: hidden;
+            height: 100vh;
+        }
+
+        .slide {
+            width: 100%;
+            height: 100vh;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            padding: 60px 80px 100px 80px;
+        }
+
+        .slide-background {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: url('../images/slide_12_background.jpg');
+            background-size: cover;
+            background-position: center;
+            opacity: 0.3;
+            z-index: 0;
+        }
+
+        .slide-content {
+            position: relative;
+            z-index: 1;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .slide-title {
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 700;
+            font-size: 42px;
+            color: var(--text-primary);
+            margin-bottom: 40px;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .cards-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 25px;
+            flex: 0 0 auto;
+            margin-bottom: 20px;
+            align-items: stretch;
+        }
+
+        .company-card {
+            background: rgba(45, 45, 45, 0.6);
+            padding: 18px 15px;
+            border-radius: 12px;
+            border-top: 4px solid var(--accent-orange);
+            display: grid;
+            grid-template-rows: 40px 30px 110px 1fr; /* первые три – фикс, нижний – остаток */
+            row-gap: 5px;
+            align-items: start;
+            height: 380px;
+            animation: slideInUp 0.6s ease forwards;
+            opacity: 0;
+            transition: transform 0.3s ease, box-shadow 0.3s ease, background 0.3s ease;
+            font-size: 13px;
+        }
+
+        .company-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 15px 30px rgba(255, 107, 0, 0.3);
+            background: rgba(45, 45, 45, 0.85);
+        }
+
+        .company-card:nth-child(1) { animation-delay: 0.1s; }
+        .company-card:nth-child(2) { animation-delay: 0.2s; }
+        .company-card:nth-child(3) { animation-delay: 0.3s; }
+        .company-card:nth-child(4) { animation-delay: 0.4s; }
+        .company-card:nth-child(5) { animation-delay: 0.5s; }
+
+        /* Блок 1 – логотип */
+        .company-logo {
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 900;
+            font-size: 28px;
+            color: var(--accent-orange);
+            line-height: 1;
+            height: 40px;
+            letter-spacing: 1px;
+            grid-row: 1;
+            align-self: start;
+        }
+
+        /* Блок 2 – подзаголовок */
+        .company-subtitle {
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 700;
+            font-size: 16px;
+            color: var(--text-primary);
+            line-height: 1.2;
+            height: 30px;
+            grid-row: 2;
+            align-self: start;
+        }
+
+        /* Блок 3 – описание */
+        .card-description {
+            font-family: 'Roboto', sans-serif;
+            font-weight: 400;
+            font-size: 16px;
+            color: var(--text-secondary);
+            line-height: 1.4;
+            grid-row: 3;
+            align-self: start;
+            height: 110px;
+            overflow: visible;
+            text-align: left;
+        }
+
+        /* Блок 4+5 – нижний контейнер (flex) */
+        .bottom-container {
+            grid-row: 4;
+            align-self: stretch;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start; /* stat-box сверху, ссылка снизу через margin-top: auto */
+            height: 100%;
+            width: 100%;
+        }
+
+        .stat-box {
+            background: rgba(255, 107, 0, 0.1);
+            padding: 8px 12px;
+            border-radius: 6px;
+            border-left: 3px solid var(--accent-orange);
+            margin-bottom: 8px;
+            flex: 0 0 auto; /* высота по контенту */
+            width: 100%;
+        }
+
+        .stat-value {
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 800;
+            font-size: 18px;
+            color: var(--accent-orange);
+            display: block;
+            margin-bottom: 2px;
+            line-height: 1.2;
+        }
+
+        .stat-label {
+            font-size: 16px;
+            color: var(--text-secondary);
+            line-height: 1.3;
+            text-align: left;
+        }
+
+        .source-link {
+            font-family: 'Roboto', sans-serif;
+            font-size: 11px;
+            color: var(--link-blue);
+            text-decoration: underline;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            cursor: pointer;
+            margin-top: auto; /* прижимаем к низу */
+            align-self: flex-start;
+            line-height: 1.4;
+            flex: 0 0 auto;
+        }
+
+        .source-link:hover {
+            color: var(--accent-orange);
+            text-decoration: none;
+        }
+
+        .source-link::after {
+            content: "→";
+            font-size: 12px;
+            transition: transform 0.3s ease;
+        }
+
+        .source-link:hover::after {
+            transform: translateX(3px);
+        }
+
+        .trend-block {
+            text-align: center;
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 600;
+            font-size: 22px;
+            color: var(--accent-orange);
+            margin: 40px 0 20px 0;
+            letter-spacing: 0.5px;
+            animation: fadeIn 0.8s ease 1s forwards;
+            opacity: 0;
+            line-height: 1.4;
+        }
+
+        .trend-source {
+            display: block;
+            text-align: center;
+            margin-top: 6px;
+        }
+
+        .practice-block {
+            background: rgba(45, 45, 45, 0.6);
+            padding: 20px 30px;
+            border-radius: 12px;
+            border-left: 4px solid var(--accent-orange);
+            animation: fadeIn 0.8s ease 0.8s forwards;
+            opacity: 0;
+            margin-top: auto;
+        }
+
+        .practice-label {
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 700;
+            font-size: 14px;
+            color: var(--accent-orange);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 10px;
+        }
+
+        .practice-text {
+            font-size: 16px;
+            color: var(--text-primary);
+            line-height: 1.5;
+        }
+
+        .practice-text a {
+            color: var(--link-blue);
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.3s ease;
+        }
+
+        .practice-text a:hover {
+            color: var(--accent-orange);
+            text-decoration: underline;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes slideInUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .navigation {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            display: flex;
+            gap: 15px;
+            z-index: 1000;
+            align-items: center;
+        }
+
+        .nav-button {
+            width: 80px;
+            height: 45px;
+            border-radius: 8px;
+            background: var(--accent-orange);
+            border: none;
+            color: white;
+            font-size: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .nav-button:hover {
+            background: var(--accent-orange-light);
+            transform: scale(1.1);
+        }
+
+        .nav-button:disabled {
+            background: var(--bg-tertiary);
+            cursor: not-allowed;
+            opacity: 0.5;
+        }
+
+        .progress-bar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: var(--bg-tertiary);
+            z-index: 1000;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: var(--accent-orange);
+            width: 44.4%;
+            transition: width 0.3s ease;
+        }
+
+        .slide-counter {
+            font-family: 'Montserrat', sans-serif;
+            font-size: 16px;
+            color: var(--text-secondary);
+            margin-right: 15px;
+            display: inline-block;
+            vertical-align: middle;
+        }
+
+        audio {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="progress-bar">
+        <div class="progress-fill"></div>
+    </div>
+
+    <div class="navigation">
+        <span class="slide-counter">12 / 27</span>
+        <button class="nav-button" onclick="window.location.href='slide_11.html'">←</button>
+        <button class="nav-button" id="playBtn" onclick="playAudio()">▶</button>
+        <button class="nav-button" onclick="window.location.href='slide_13.html'">→</button>
+    </div>
+
+    <div class="slide">
+        <div class="slide-background"></div>
+        <div class="slide-content">
+            <h1 class="slide-title">Мировая практика внедрения ИИ: Россия</h1>
+
+            <div class="cards-grid">
+                <!-- КАМАЗ -->
+                <div class="company-card">
+                    <div class="company-logo">КАМАЗ</div>
+                    <div class="company-subtitle">Нейросети и компьютерное зрение Оптера</div>
+                    <p class="card-description">
+                        ИИ контролирует качество и эргономику, помогает проектировать сложные детали.
+                    </p>
+                    <div class="bottom-container">
+                        <div class="stat-box">
+                            <span class="stat-value">Компьютерное зрение</span>
+                            <span class="stat-label">снижение травматизма до 70%, рост производительности +25–30%</span>
+                        </div>
+                        <a href="https://optera.space/?utm_source=kamaz.digtial&utm_medium=banner&utm_campaign=default#early" class="source-link" target="_blank">Источник</a>
+                    </div>
+                </div>
+
+                <!-- Росатом -->
+                <div class="company-card">
+                    <div class="company-logo">Росатом</div>
+                    <div class="company-subtitle">AI-ассистент для документации</div>
+                    <p class="card-description">
+                        AI-ассистент для трассировки технической документации. Сокращение времени в 6 раз.
+                    </p>
+                    <div class="bottom-container">
+                        <div class="stat-box">
+                            <span class="stat-value">6×</span>
+                            <span class="stat-label">сокращение времени на трассировку документации</span>
+                        </div>
+                        <a href="https://rosatom.cnews.ru/articles/2024-12-02_pobeda_nad_rutinoj_kak_ai-assistent" class="source-link" target="_blank">Источник</a>
+                    </div>
+                </div>
+
+                <!-- Северсталь -->
+                <div class="company-card">
+                    <div class="company-logo">Северсталь</div>
+                    <div class="company-subtitle">Платформа «Да Винчи»</div>
+                    <p class="card-description">
+                        Глубокая интеграция ИИ в производственные цепочки: компьютерное зрение на производстве, ИИ-ассистенты в офисных задачах.
+                    </p>
+                    <div class="bottom-container">
+                        <div class="stat-box">
+                            <span class="stat-value">Комплексная интеграция</span>
+                            <span class="stat-label">от производства до офисных процессов</span>
+                        </div>
+                        <a href="https://www.tadviser.ru/index.php/Проект:Северсталь_(Искусственный_интеллект_(ИИ,_Artificial_intelligence,_AI))_Северсталь-Инфоком" class="source-link" target="_blank">Источник</a>
+                    </div>
+                </div>
+
+                <!-- Сбер -->
+                <div class="company-card">
+                    <div class="company-logo">Сбер</div>
+                    <div class="company-subtitle">GigaChat для инженеров</div>
+                    <p class="card-description">
+                        GigaChat для инженеров-технологов: генерация техпроцесса по описанию на естественном языке.
+                    </p>
+                    <div class="bottom-container">
+                        <div class="stat-box">
+                            <span class="stat-value">Генерация техпроцессов</span>
+                            <span class="stat-label">описание → готовый техпроцесс</span>
+                        </div>
+                        <a href="https://www.cnews.ru/news/line/2026-05-19_assistenty_inzhenerov_na" class="source-link" target="_blank">Источник</a>
+                    </div>
+                </div>
+
+                <!-- Норникель -->
+                <div class="company-card">
+                    <div class="company-logo">Норникель</div>
+                    <div class="company-subtitle">Генеративный ИИ в проектировании</div>
+                    <p class="card-description">
+                        Уже использует ИИ на всех этапах производства: от компьютерного зрения на обогатительных фабриках до генеративного проектирования промышленных объектов.
+                    </p>
+                    <div class="bottom-container">
+                        <div class="stat-box">
+                            <span class="stat-value">Все этапы производства</span>
+                            <span class="stat-label">от обогащения до проектирования объектов</span>
+                        </div>
+                        <a href="https://nornickel.ru/news-and-media/press-releases-and-news/nornikel-vnedryaet-generativnyy-ii-v-promyshlennoe-proektirovanie/" class="source-link" target="_blank">Источник</a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="trend-block">
+                <div>Общий тренд: переход от разовых пилотных проектов к системной трансформации. ИИ становится инструментом для сквозной оптимизации процессов, повышения эффективности и решения стратегических задач предприятий</div>
+                <a href="https://companies.rbc.ru/news/wnUZSdAx14/ii-v-promyishlennosti-nastoyaschee-i-buduschee-rossijskogo-proizvodstva/" class="source-link trend-source" target="_blank">Источник</a>
+            </div>
+
+            <div class="practice-block">
+                <div class="practice-label">Практика</div>
+                <div class="practice-text">
+                    Показана только малая часть примеров использования. Попросите <a href="https://giga.chat/" target="_blank">GigaChat</a> рассказать о примерах использования ИИ в российских производственных компаниях.
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <audio id="audio-12" src="../audio/slide_12_audio.mp3"></audio>
+
+    <script>
+        function playAudio() {
+            const audio = document.getElementById('audio-12');
+            if (audio) {
+                audio.play().catch(e => console.log('Audio play failed:', e));
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const audio = document.getElementById('audio-12');
+            if (audio) {
+                audio.play().catch(e => console.log('Audio play failed:', e));
+            }
+        });
+    </script>
+</body>
+</html>

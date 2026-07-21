@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Современный автопром: гонка, в которой выживут только самые эффективные</title>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;900&family=Roboto:wght@300;400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-primary: #1a1a1a;
+            --bg-secondary: #2d2d2d;
+            --bg-tertiary: #3d3d3d;
+            --accent-orange: #ff6b00;
+            --accent-orange-light: #ff8533;
+            --text-primary: #ffffff;
+            --text-secondary: #b0b0b0;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Roboto', sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            overflow: hidden;
+            height: 100vh;
+        }
+
+        .slide {
+            width: 100%;
+            height: 100vh;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            padding: 60px 80px 100px 80px;
+        }
+
+        .slide-background {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: url('../images/slide_03_background.jpg');
+            background-size: cover;
+            background-position: center;
+            opacity: 0.3;
+            z-index: 0;
+        }
+
+        .slide-content {
+            position: relative;
+            z-index: 1;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .slide-title {
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 700;
+            font-size: 42px;
+            color: var(--text-primary);
+            margin-bottom: 50px;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .markdown-container {
+            background: rgba(45, 45, 45, 0.2);
+            padding: 40px;
+            border-radius: 12px;
+            border-left: 4px solid var(--accent-orange);
+            max-width: 1200px;
+            margin: 0 auto;
+            width: 100%;
+            animation: slideInUp 0.8s ease 0.3s forwards;
+            opacity: 0;
+        }
+
+        .markdown-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+
+        .markdown-table th {
+            background: var(--bg-tertiary);
+            color: var(--text-primary);
+            padding: 15px;
+            text-align: left;
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 600;
+            font-size: 16px;
+        }
+
+        .markdown-table td {
+            padding: 15px;
+            border-bottom: 1px solid var(--bg-tertiary);
+            font-size: 16px;
+            color: var(--text-primary); /* изменено с серого на белый */
+        }
+
+        .markdown-table tr:nth-child(even) {
+            background: rgba(255, 107, 0, 0.05);
+        }
+
+        .markdown-table tr:hover {
+            background: rgba(255, 107, 0, 0.1);
+        }
+
+        .stat-highlight {
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 900;
+            font-size: 24px;
+            color: var(--accent-orange);
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes slideInUp {
+            from { opacity: 0; transform: translateY(50px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Navigation */
+        .navigation {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            display: flex;
+            gap: 15px;
+            z-index: 1000;
+            align-items: center;
+        }
+
+        .nav-button {
+            width: 80px;
+            height: 45px;
+            border-radius: 8px;
+            background: var(--accent-orange);
+            border: none;
+            color: white;
+            font-size: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .nav-button:hover {
+            background: var(--accent-orange-light);
+            transform: scale(1.1);
+        }
+
+        .nav-button:disabled {
+            background: var(--bg-tertiary);
+            cursor: not-allowed;
+            opacity: 0.5;
+        }
+
+        .progress-bar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: var(--bg-tertiary);
+            z-index: 1000;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: var(--accent-orange);
+            width: 11.1%;
+            transition: width 0.3s ease;
+        }
+
+        .slide-counter {
+            font-family: 'Montserrat', sans-serif;
+            font-size: 16px;
+            color: var(--text-secondary);
+            margin-right: 15px;
+            display: inline-block;
+            vertical-align: middle;
+        }
+
+        audio {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="progress-bar">
+        <div class="progress-fill"></div>
+    </div>
+
+    <div class="navigation">
+        <span class="slide-counter">3 / 27</span>
+        <button class="nav-button" onclick="window.location.href='slide_02.html'">←</button>
+        <button class="nav-button" id="playBtn" onclick="playAudio()">▶</button>
+        <button class="nav-button" onclick="window.location.href='slide_04.html'">→</button>
+    </div>
+
+    <div class="slide">
+        <div class="slide-background"></div>
+        
+        <div class="slide-content">
+            <h1 class="slide-title">Современный автопром: гонка, в которой выживут только самые эффективные</h1>
+            
+            <div class="markdown-container">
+                <table class="markdown-table">
+                    <thead>
+                        <tr>
+                            <th>Показатель</th>
+                            <th>Значение</th>
+                            <th>Источник</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><span class="stat-highlight">💰 $50B+</span></td>
+                            <td>Инвестиции Ford, GM, Stellantis в ИИ до 2030</td>
+                            <td>Отраслевые отчёты</td>
+                        </tr>
+                        <tr>
+                            <td><span class="stat-highlight">📊 88%</span></td>
+                            <td>Автопроизводителей уже используют ИИ</td>
+                            <td>McKinsey 2025</td>
+                        </tr>
+                        <tr>
+                            <td><span class="stat-highlight">✅ &lt;1%</span></td>
+                            <td>Уровень дефектов с ИИ (было 5%)</td>
+                            <td>Отраслевая практика</td>
+                        </tr>
+                        <tr>
+                            <td><span class="stat-highlight">🌍 $4.4T</span></td>
+                            <td>Ежегодный экономический эффект GenAI в промышленности</td>
+                            <td>McKinsey 2024</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <audio id="audio-3" src="../audio/slide_03_audio.mp3"></audio>
+
+    <script>
+        function playAudio() {
+            const audio = document.getElementById('audio-3');
+            if (audio) {
+                audio.play().catch(e => console.log('Audio play failed:', e));
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const audio = document.getElementById('audio-3');
+            if (audio) {
+                audio.play().catch(e => console.log('Audio play failed:', e));
+            }
+        });
+    </script>
+</body>
+</html>

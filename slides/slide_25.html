@@ -1,0 +1,562 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Интеграция в рабочие процессы: пилотные проекты</title>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;900&family=Roboto:wght@300;400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-primary: #1a1a1a;
+            --bg-secondary: #2d2d2d;
+            --bg-tertiary: #3d3d3d;
+            --accent-orange: #ff6b00;
+            --accent-orange-light: #ff8533;
+            --text-primary: #ffffff;
+            --text-secondary: #b0b0b0;
+            --link-blue: #4a9eff;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Roboto', sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            overflow: hidden;
+            height: 100vh;
+        }
+
+        .slide {
+            width: 100%;
+            height: 100vh;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            padding: 60px 80px 100px 80px;
+        }
+
+        .slide-background {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: url('../images/slide_25_background.jpg');
+            background-size: cover;
+            background-position: center;
+            opacity: 0.3;
+            z-index: 0;
+        }
+
+        .slide-content {
+            position: relative;
+            z-index: 1;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .slide-title {
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 700;
+            font-size: 42px;
+            color: var(--text-primary);
+            margin-bottom: 30px;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .label {
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 700;
+            font-size: 16px;
+            color: var(--accent-orange);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 6px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        /* Три карточки фаз */
+        .cards-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            flex: 0 0 auto;
+        }
+
+        .phase-card {
+            background: rgba(45, 45, 45, 0.6);
+            padding: 16px 18px 14px;
+            border-radius: 12px;
+            border-top: 4px solid var(--accent-orange);
+            animation: slideInUp 0.6s ease forwards;
+            opacity: 0;
+            transition: transform 0.3s ease, box-shadow 0.3s ease, background 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            min-height: 260px;
+        }
+
+        .phase-card:hover {
+            transform: translateY(-6px);
+            box-shadow: 0 15px 30px rgba(255, 107, 0, 0.3);
+            background: rgba(45, 45, 45, 0.85);
+        }
+
+        .phase-card:nth-child(1) { animation-delay: 0.1s; }
+        .phase-card:nth-child(2) { animation-delay: 0.2s; }
+        .phase-card:nth-child(3) { animation-delay: 0.3s; }
+
+        .phase-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 4px;
+        }
+
+        .phase-icon {
+            font-size: 32px;
+            line-height: 1;
+        }
+
+        .phase-title {
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 700;
+            font-size: 18px;
+            color: var(--accent-orange);
+        }
+
+        .phase-timing {
+            font-family: 'Roboto', sans-serif;
+            font-size: 16px;
+            font-weight: 400;
+            color: var(--text-secondary);
+            line-height: 1.6;
+            margin-bottom: 6px;
+        }
+
+        .phase-list {
+            list-style: none;
+            margin: 0 0 6px 0;
+            flex-grow: 1;
+            padding: 0;
+        }
+
+        .phase-list li {
+            font-family: 'Roboto', sans-serif;
+            font-size: 16px;
+            font-weight: 400;
+            color: var(--text-primary);
+            line-height: 1.6;
+            padding-left: 20px;
+            position: relative;
+            margin-bottom: 2px;
+        }
+
+        .phase-list li::before {
+            content: "›";
+            color: var(--accent-orange);
+            font-weight: 700;
+            font-size: 20px;
+            position: absolute;
+            left: 0;
+            top: -2px;
+        }
+
+        .phase-goal {
+            background: rgba(0,0,0,0.15);
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-family: 'Roboto', sans-serif;
+            font-size: 16px;
+            font-weight: 400;
+            color: var(--text-secondary);
+            line-height: 1.6;
+            margin-top: auto;
+            border-left: 3px solid var(--accent-orange);
+        }
+
+        .phase-goal strong {
+            color: var(--text-primary);
+            font-weight: 500;
+        }
+
+        /* Схема */
+        .scheme-block {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            flex-wrap: wrap;
+            padding: 6px 0;
+            animation: fadeIn 0.8s ease 0.8s forwards;
+            opacity: 0;
+            flex: 0 0 auto;
+        }
+
+        .scheme-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(0,0,0,0.3);
+            padding: 6px 16px;
+            border-radius: 8px;
+            font-family: 'Roboto', sans-serif;
+            font-size: 14px;
+            font-weight: 400;
+            color: var(--text-primary);
+            line-height: 1.6;
+        }
+
+        .scheme-item .emoji {
+            font-size: 22px;
+        }
+
+        .scheme-arrow {
+            font-size: 20px;
+            color: var(--accent-orange);
+        }
+
+        /* Блок практики (план) */
+        .practice-block {
+            background: rgba(45, 45, 45, 0.6);
+            padding: 12px 22px;
+            border-radius: 12px;
+            border-left: 4px solid var(--accent-orange);
+            animation: fadeIn 0.8s ease 1.0s forwards;
+            opacity: 0;
+            flex: 0 0 auto;
+            transition: transform 0.3s ease, box-shadow 0.3s ease, background 0.3s ease;
+        }
+
+        .practice-block:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 15px 30px rgba(255, 107, 0, 0.3);
+            background: rgba(45, 45, 45, 0.85);
+        }
+
+        .practice-label {
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 700;
+            font-size: 14px;
+            color: var(--accent-orange);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 4px;
+        }
+
+        .practice-text {
+            font-family: 'Roboto', sans-serif;
+            font-size: 16px;
+            font-weight: 400;
+            color: var(--text-primary);
+            line-height: 1.6;
+        }
+
+        .practice-text strong {
+            color: var(--accent-orange);
+            font-weight: 500;
+        }
+
+        .practice-text .source {
+            display: block;
+            margin-top: 4px;
+            color: var(--text-secondary);
+            font-style: italic;
+            font-size: 14px;
+        }
+
+        /* Блок Примеры успеха */
+        .examples-block {
+            background: rgba(45, 45, 45, 0.6);
+            padding: 12px 22px;
+            border-radius: 12px;
+            border-left: 4px solid var(--accent-orange);
+            animation: fadeIn 0.8s ease 1.2s forwards;
+            opacity: 0;
+            margin-top: auto;
+            transition: transform 0.3s ease, box-shadow 0.3s ease, background 0.3s ease;
+        }
+
+        .examples-block:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 15px 30px rgba(255, 107, 0, 0.3);
+            background: rgba(45, 45, 45, 0.85);
+        }
+
+        .examples-list {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            margin-top: 4px;
+        }
+
+        .example-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            font-family: 'Roboto', sans-serif;
+            font-size: 16px;
+            font-weight: 400;
+            color: var(--text-secondary);
+            line-height: 1.6;
+        }
+
+        .example-item strong {
+            color: var(--text-primary);
+            font-weight: 500;
+        }
+
+        .example-item .source-link {
+            font-family: 'Roboto', sans-serif;
+            font-size: 14px;
+            font-weight: 400;
+            color: var(--link-blue);
+            text-decoration: underline;
+            transition: all 0.3s ease;
+            margin-left: 4px;
+            white-space: nowrap;
+        }
+
+        .example-item .source-link:hover {
+            color: var(--accent-orange);
+            text-decoration: none;
+        }
+
+        .example-item .source-link::after {
+            content: "→";
+            font-size: 12px;
+            transition: transform 0.3s ease;
+        }
+
+        .example-item .source-link:hover::after {
+            transform: translateX(3px);
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes slideInUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Navigation */
+        .navigation {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            display: flex;
+            gap: 15px;
+            z-index: 1000;
+            align-items: center;
+        }
+
+        .nav-button {
+            width: 80px;
+            height: 45px;
+            border-radius: 8px;
+            background: var(--accent-orange);
+            border: none;
+            color: white;
+            font-size: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .nav-button:hover {
+            background: var(--accent-orange-light);
+            transform: scale(1.1);
+        }
+
+        .nav-button:disabled {
+            background: var(--bg-tertiary);
+            cursor: not-allowed;
+            opacity: 0.5;
+        }
+
+        .progress-bar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: var(--bg-tertiary);
+            z-index: 1000;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: var(--accent-orange);
+            width: 92.59%;
+            transition: width 0.3s ease;
+        }
+
+        .slide-counter {
+            font-family: 'Montserrat', sans-serif;
+            font-size: 16px;
+            color: var(--text-secondary);
+            margin-right: 15px;
+            display: inline-block;
+            vertical-align: middle;
+        }
+
+        audio {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="progress-bar">
+        <div class="progress-fill"></div>
+    </div>
+
+    <div class="navigation">
+        <span class="slide-counter">25 / 27</span>
+        <button class="nav-button" onclick="window.location.href='slide_24.html'">←</button>
+        <button class="nav-button" id="playBtn" onclick="playAudio()">▶</button>
+        <button class="nav-button" onclick="window.location.href='slide_26.html'">→</button>
+    </div>
+
+    <div class="slide">
+        <div class="slide-background"></div>
+        <div class="slide-content">
+            <h1 class="slide-title">Интеграция в рабочие процессы: пилотные проекты</h1>
+
+            <!-- Три карточки фаз -->
+            <div class="cards-grid">
+                <!-- Фаза 1 -->
+                <div class="phase-card">
+                    <div class="phase-header">
+                        <span class="phase-icon">👤</span>
+                        <span class="phase-title">Фаза 1: Личный пилот</span>
+                    </div>
+                    <div class="phase-timing">⏱ 1–2 месяца</div>
+                    <ul class="phase-list">
+                        <li>Выберите ваши 2–3 рутинные задачи</li>
+                        <li>Используйте корпоративную LLM для черновиков</li>
+                        <li>Замеряйте время: «до» и «после»</li>
+                    </ul>
+                    <div class="phase-goal">
+                        <strong>Цель:</strong> убедиться, что инструмент работает в ваших задачах
+                    </div>
+                </div>
+
+                <!-- Фаза 2 -->
+                <div class="phase-card">
+                    <div class="phase-header">
+                        <span class="phase-icon">🤝</span>
+                        <span class="phase-title">Фаза 2: Командный пилот</span>
+                    </div>
+                    <div class="phase-timing">⏱ 2–3 месяца</div>
+                    <ul class="phase-list">
+                        <li>Объедините 3–5 коллег из цеха/отдела</li>
+                        <li>Разработайте общие промпты-шаблоны для типовых задач</li>
+                        <li>Создайте базу знаний: удачные промпты, примеры, ограничения</li>
+                    </ul>
+                    <div class="phase-goal">
+                        <strong>Цель:</strong> масштабировать опыт на команду
+                    </div>
+                </div>
+
+                <!-- Фаза 3 -->
+                <div class="phase-card">
+                    <div class="phase-header">
+                        <span class="phase-icon">🏗️</span>
+                        <span class="phase-title">Фаза 3: Интеграция в процессы</span>
+                    </div>
+                    <div class="phase-timing">⏱ 3–6 месяцев</div>
+                    <ul class="phase-list">
+                        <li>Включите LLM в стандарты организации (СТО)</li>
+                        <li>Интегрируйте с корпоративные ИТ-системы</li>
+                        <li>Обучите новых сотрудников работе с LLM</li>
+                    </ul>
+                    <div class="phase-goal">
+                        <strong>Цель:</strong> LLM — стандартный корпоративный инструмент
+                    </div>
+                </div>
+            </div>
+
+            <!-- Схема -->
+            <div class="scheme-block">
+                <div class="scheme-item">
+                    <span class="emoji">🧑‍💻</span> Личный пилот
+                </div>
+                <span class="scheme-arrow">→</span>
+                <div class="scheme-item">
+                    <span class="emoji">👥</span> Командный пилот
+                </div>
+                <span class="scheme-arrow">→</span>
+                <div class="scheme-item">
+                    <span class="emoji">🏭</span> Интеграция
+                </div>
+                <span class="scheme-arrow" style="color: var(--text-secondary);">⟳</span>
+                <div class="scheme-item">
+                    <span class="emoji">📈</span> Масштабирование
+                </div>
+            </div>
+
+            <!-- Блок практики (план) -->
+            <div class="practice-block">
+                <div class="practice-label">📋 План пилотного проекта</div>
+                <div class="practice-text">
+                    <strong>Месяц 1:</strong> Выбор 3 задач, замер времени «до», обучение 2–3 инженеров<br>
+                    <strong>Месяц 2:</strong> Использование LLM, замер времени «после», сбор обратной связи<br>
+                    <strong>Месяц 3:</strong> Анализ результатов, расчёт ROI, подготовка отчёта для руководства<br>
+                    <strong>Месяц 4–6:</strong> Масштабирование на отдел, разработка шаблонов, интеграция в СТО<br>
+                    <strong>Типичный срок окупаемости пилота:</strong> 2–3 месяца за счёт экономии времени
+                    <span class="source">Примеры задач для пилота: анализ стандартов, генерация ТЗ на оборудование, FMEA-анализ, расчёт экономической эффективности</span>
+                </div>
+            </div>
+
+            <!-- Блок Примеры успеха -->
+            <div class="examples-block">
+                <div class="label">🏆 Примеры успеха</div>
+                <div class="examples-list">
+                    <div class="example-item">
+                        <span><strong>Северсталь:</strong> платформа «Да Винчи» выросла с 50 до 500 пользователей за 6 месяцев, в 2026 идёт масштабирование на всю компанию.
+                        <a href="https://severstal.com/rus/media/archive/severstal-zapustila-platformu-generativnogo-iskusstvennogo-intellekta/" target="_blank" class="source-link">Источник</a></span>
+                    </div>
+                    <div class="example-item">
+                        <span><strong>Норникель:</strong> вошёл в тройку мировых лидеров по внедрению ИИ в горно-металлургической отрасли, наравне с Tata Steel и POSCO.
+                        <a href="https://www.tv21.ru/news/2026/04/17/nornikel-v-chisle-liderov-industrii-po-vnedreniyu-ii" target="_blank" class="source-link">Источник</a></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <audio id="audio-25" src="../audio/slide_25_audio.mp3"></audio>
+
+    <script>
+        function playAudio() {
+            const audio = document.getElementById('audio-25');
+            if (audio) {
+                audio.play().catch(e => console.log('Audio play failed:', e));
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const audio = document.getElementById('audio-25');
+            if (audio) {
+                audio.play().catch(e => console.log('Audio play failed:', e));
+            }
+        });
+    </script>
+</body>
+</html>

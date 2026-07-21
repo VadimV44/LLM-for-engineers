@@ -1,0 +1,573 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Публичные vs корпоративные LLM: выбор архитектуры</title>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;900&family=Roboto:wght@300;400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-primary: #1a1a1a;
+            --bg-secondary: #2d2d2d;
+            --bg-tertiary: #3d3d3d;
+            --accent-orange: #ff6b00;
+            --accent-orange-light: #ff8533;
+            --text-primary: #ffffff;
+            --text-secondary: #b0b0b0;
+            --link-blue: #4a9eff;
+            --green: #4caf50;
+            --yellow: #ffc107;
+            --red: #f44336;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Roboto', sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            overflow: hidden;
+            height: 100vh;
+        }
+
+        .slide {
+            width: 100%;
+            height: 100vh;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            padding: 60px 80px 100px 80px;
+        }
+
+        .slide-background {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: url('../images/slide_23_background.jpg');
+            background-size: cover;
+            background-position: center;
+            opacity: 0.3;
+            z-index: 0;
+        }
+
+        .slide-content {
+            position: relative;
+            z-index: 1;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .slide-title {
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 700;
+            font-size: 42px;
+            color: var(--text-primary);
+            margin-bottom: 40px;
+            animation: fadeIn 0.5s ease;
+        }
+
+        /* Три карточки */
+        .cards-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            flex: 0 0 auto;
+        }
+
+        .type-card {
+            background: rgba(45, 45, 45, 0.6);
+            padding: 18px 18px 15px;
+            border-radius: 12px;
+            border-top: 4px solid var(--accent-orange);
+            animation: slideInUp 0.6s ease forwards;
+            opacity: 0;
+            transition: transform 0.3s ease, box-shadow 0.3s ease, background 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+        }
+
+        .type-card:hover {
+            transform: translateY(-6px);
+            box-shadow: 0 15px 30px rgba(255, 107, 0, 0.3);
+            background: rgba(45, 45, 45, 0.85);
+        }
+
+        .type-card:nth-child(1) { animation-delay: 0.1s; }
+        .type-card:nth-child(2) { animation-delay: 0.2s; }
+        .type-card:nth-child(3) { animation-delay: 0.3s; }
+
+        .type-card {
+            border-top-color: var(--accent-orange);
+        }
+
+        .type-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 10px;
+        }
+
+        .type-icon {
+            font-size: 32px;
+            line-height: 1;
+        }
+
+        .type-name {
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 700;
+            font-size: 20px;
+            color: var(--accent-orange);
+        }
+
+        .type-sub {
+            font-size: 14px;
+            color: var(--text-secondary);
+            margin-bottom: 8px;
+        }
+
+        .type-list {
+            list-style: none;
+            margin: 4px 0 8px 0;
+            flex-grow: 1;
+            padding: 0;
+        }
+
+        .type-list li {
+            font-size: 15px;
+            color: var(--text-primary);
+            line-height: 1.4;
+            padding-left: 0;
+            position: relative;
+            margin-bottom: 3px;
+        }
+
+        .type-list .plus {
+            color: var(--green);
+            font-weight: 700;
+            font-size: 18px;
+            margin-right: 4px;
+        }
+
+        .type-list .minus {
+            color: var(--red);
+            font-weight: 700;
+            font-size: 18px;
+            margin-right: 4px;
+        }
+
+        .type-example {
+            background: rgba(0,0,0,0.25);
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 14px;
+            color: var(--text-primary);
+            line-height: 1.4;
+            margin-top: auto;
+            border-left: 3px solid var(--accent-orange);
+        }
+
+        .type-example .label-marker {
+            color: var(--text-secondary);
+        }
+
+        /* Схема в 2 строки */
+        .scheme-block {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            padding: 10px 0;
+            animation: fadeIn 0.8s ease 0.8s forwards;
+            opacity: 0;
+            flex: 0 0 auto;
+        }
+
+        .scheme-row {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .scheme-group {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(0,0,0,0.3);
+            padding: 6px 14px;
+            border-radius: 8px;
+            font-size: 16px;
+            color: var(--text-primary);
+        }
+
+        .scheme-group .emoji {
+            font-size: 24px;
+        }
+
+        .scheme-arrow {
+            font-size: 20px;
+            color: var(--accent-orange);
+        }
+
+        .scheme-label {
+            font-size: 14px;
+            color: var(--text-secondary);
+            margin-left: 8px;
+            font-style: italic;
+            white-space: nowrap;
+        }
+
+        .scheme-divider {
+            font-size: 18px;
+            color: var(--text-secondary);
+            font-weight: 700;
+            padding: 0 4px;
+        }
+
+        /* Сравнительная таблица */
+        .table-block {
+            background: rgba(45, 45, 45, 0.6);
+            border-radius: 12px;
+            border-left: 4px solid var(--accent-orange);
+            animation: slideInUp 0.8s ease 1.0s forwards;
+            opacity: 0;
+            overflow: hidden;
+            flex: 0 0 auto;
+            transition: transform 0.3s ease, box-shadow 0.3s ease, background 0.3s ease;
+        }
+
+        .table-block:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 15px 30px rgba(255, 107, 0, 0.3);
+            background: rgba(45, 45, 45, 0.85);
+        }
+
+        .comparison-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 16px;
+            table-layout: fixed;
+        }
+
+        .comparison-table th,
+        .comparison-table td {
+            padding: 10px 16px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+        }
+
+        .comparison-table th {
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 700;
+            font-size: 15px;
+            color: var(--accent-orange);
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+            background: rgba(255, 107, 0, 0.05);
+            text-align: left;
+        }
+
+        .comparison-table th:not(:first-child) {
+            text-align: center;
+        }
+
+        .comparison-table col:first-child {
+            width: 1%;
+            white-space: nowrap;
+        }
+
+        .comparison-table col:not(:first-child) {
+            width: 33%;
+        }
+
+        .comparison-table td:first-child {
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 600;
+            color: var(--text-primary);
+            white-space: nowrap;
+        }
+
+        .comparison-table td:not(:first-child) {
+            color: var(--text-primary);
+            text-align: center;
+        }
+
+        .comparison-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        /* Цветовое кодирование ячеек — прозрачнее (opacity 0.1) */
+        .cell-high {
+            background: rgba(76, 175, 80, 0.1);
+        }
+        .cell-medium {
+            background: rgba(255, 193, 7, 0.1);
+        }
+        .cell-low {
+            background: rgba(244, 67, 54, 0.1);
+        }
+        .cell-free {
+            background: rgba(76, 175, 80, 0.1);
+        }
+        .cell-subscription {
+            background: rgba(255, 193, 7, 0.1);
+        }
+        .cell-capex {
+            background: rgba(244, 67, 54, 0.1);
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes slideInUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Navigation */
+        .navigation {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            display: flex;
+            gap: 15px;
+            z-index: 1000;
+            align-items: center;
+        }
+
+        .nav-button {
+            width: 80px;
+            height: 45px;
+            border-radius: 8px;
+            background: var(--accent-orange);
+            border: none;
+            color: white;
+            font-size: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .nav-button:hover {
+            background: var(--accent-orange-light);
+            transform: scale(1.1);
+        }
+
+        .nav-button:disabled {
+            background: var(--bg-tertiary);
+            cursor: not-allowed;
+            opacity: 0.5;
+        }
+
+        .progress-bar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: var(--bg-tertiary);
+            z-index: 1000;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: var(--accent-orange);
+            width: 85.18%;
+            transition: width 0.3s ease;
+        }
+
+        .slide-counter {
+            font-family: 'Montserrat', sans-serif;
+            font-size: 16px;
+            color: var(--text-secondary);
+            margin-right: 15px;
+            display: inline-block;
+            vertical-align: middle;
+        }
+
+        audio {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="progress-bar">
+        <div class="progress-fill"></div>
+    </div>
+
+    <div class="navigation">
+        <span class="slide-counter">23 / 27</span>
+        <button class="nav-button" onclick="window.location.href='slide_22.html'">←</button>
+        <button class="nav-button" id="playBtn" onclick="playAudio()">▶</button>
+        <button class="nav-button" onclick="window.location.href='slide_24.html'">→</button>
+    </div>
+
+    <div class="slide">
+        <div class="slide-background"></div>
+        <div class="slide-content">
+            <h1 class="slide-title">Публичные vs корпоративные LLM: выбор архитектуры</h1>
+
+            <!-- Три карточки -->
+            <div class="cards-grid">
+                <!-- Публичные LLM -->
+                <div class="type-card public">
+                    <div class="type-header">
+                        <span class="type-icon">🌐</span>
+                        <span class="type-name">Публичные LLM</span>
+                    </div>
+                    <div class="type-sub">Алиса AI, GigaChat</div>
+                    <ul class="type-list">
+                        <li><span class="plus">✅</span> Постоянное обновление, мультимодальность</li>
+                        <li><span class="minus">❌</span> Данные уходят на внешние серверы, используются для дообучения</li>
+                        <li><span class="minus">❌</span> Нельзя использовать для конфиденциальных задач</li>
+                    </ul>
+                    <div class="type-example">
+                        <span class="label-marker">Применение:</span> учебные задачи, работа с публичными данными, прототипирование
+                    </div>
+                </div>
+
+                <!-- Корпоративные LLM -->
+                <div class="type-card corporate">
+                    <div class="type-header">
+                        <span class="type-icon">🏢</span>
+                        <span class="type-name">Корпоративные LLM</span>
+                    </div>
+                    <div class="type-sub">Алиса AI Про, GigaChat Бизнес</div>
+                    <ul class="type-list">
+                        <li><span class="plus">✅</span> Данные остаются в контуре компании, соответствие 152-ФЗ</li>
+                        <li><span class="plus">✅</span> Интеграция с корпоративными системами</li>
+                        <li><span class="minus">❌</span> Ограниченные возможности по сравнению с топовыми публичными моделями</li>
+                    </ul>
+                    <div class="type-example">
+                        <span class="label-marker">Применение:</span> рабочие задачи, анализ внутренней документации, генерация отчётов
+                    </div>
+                </div>
+
+                <!-- Локальные LLM -->
+                <div class="type-card local">
+                    <div class="type-header">
+                        <span class="type-icon">🖥️</span>
+                        <span class="type-name">Локальные LLM</span>
+                    </div>
+                    <div class="type-sub">На собственных серверах</div>
+                    <ul class="type-list">
+                        <li><span class="plus">✅</span> Полный контроль над данными, работа без интернета</li>
+                        <li><span class="plus">✅</span> Кастомизация под задачи</li>
+                        <li><span class="minus">❌</span> Требуют мощного оборудования (GPU), нужна команда поддержки</li>
+                    </ul>
+                    <div class="type-example">
+                        <span class="label-marker">Применение:</span> задачи с высочайшими требованиями к безопасности
+                    </div>
+                </div>
+            </div>
+
+            <!-- Схема в 2 строки -->
+            <div class="scheme-block">
+                <div class="scheme-row">
+                    <div class="scheme-group">
+                        <span class="emoji">📊</span> Данные
+                    </div>
+                    <span class="scheme-arrow">→</span>
+                    <div class="scheme-group">
+                        <span class="emoji">🌐</span> Публичная LLM
+                    </div>
+                    <span class="scheme-label">— данные уходят на внешние серверы</span>
+                </div>
+
+                <div class="scheme-row">
+                    <div class="scheme-group">
+                        <span class="emoji">📊</span> Данные
+                    </div>
+                    <span class="scheme-arrow">→</span>
+                    <div class="scheme-group">
+                        <span class="emoji">🏢</span> Корпоративная LLM
+                    </div>
+                    <span class="scheme-arrow">→</span>
+                    <div class="scheme-group">
+                        <span class="emoji">🔒</span> Внутренний контур
+                    </div>
+                    <span class="scheme-label">— данные остаются внутри компании</span>
+                </div>
+            </div>
+
+            <!-- Сравнительная таблица -->
+            <div class="table-block">
+                <table class="comparison-table">
+                    <colgroup>
+                        <col>
+                        <col>
+                        <col>
+                        <col>
+                    </colgroup>
+                    <thead>
+                        <tr>
+                            <th>Критерий</th>
+                            <th>Публичные LLM</th>
+                            <th>Корпоративная LLM <span class="gray-text">(партнёрская)</span></th>
+                            <th>Локальная LLM <span class="gray-text">(собственные сервера)</span></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Безопасность данных</td>
+                            <td class="cell-low">Низкая</td>
+                            <td class="cell-high">Высокая</td>
+                            <td class="cell-high">Максимальная</td>
+                        </tr>
+                        <tr>
+                            <td>Возможности</td>
+                            <td class="cell-medium">Ограниченные</td>
+                            <td class="cell-medium">Средние</td>
+                            <td class="cell-high">Максимальные</td>
+                        </tr>
+                        <tr>
+                            <td>Стоимость</td>
+                            <td class="cell-free">Бесплатно</td>
+                            <td class="cell-subscription">Подписка</td>
+                            <td class="cell-capex">CAPEX на оборудование</td>
+                        </tr>
+                        <tr>
+                            <td>Применение</td>
+                            <td class="cell-medium">Ограниченное</td>
+                            <td class="cell-high">Рабочие задачи</td>
+                            <td class="cell-high">Полная интеграция</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+        </div>
+    </div>
+
+    <audio id="audio-23" src="../audio/slide_23_audio.mp3"></audio>
+
+    <script>
+        function playAudio() {
+            const audio = document.getElementById('audio-23');
+            if (audio) {
+                audio.play().catch(e => console.log('Audio play failed:', e));
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const audio = document.getElementById('audio-23');
+            if (audio) {
+                audio.play().catch(e => console.log('Audio play failed:', e));
+            }
+        });
+    </script>
+</body>
+</html>

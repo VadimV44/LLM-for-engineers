@@ -1,0 +1,649 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Как работает LLM: токены, вероятности, контекст</title>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;900&family=Roboto:wght@300;400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-primary: #1a1a1a;
+            --bg-secondary: #2d2d2d;
+            --bg-tertiary: #3d3d3d;
+            --accent-orange: #ff6b00;
+            --accent-orange-light: #ff8533;
+            --text-primary: #ffffff;
+            --text-secondary: #b0b0b0;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Roboto', sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            overflow: hidden;
+            height: 100vh;
+        }
+
+        .slide {
+            width: 100%;
+            height: 100vh;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            padding: 60px 80px 100px 80px;
+        }
+
+        .slide-background {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: url('../images/slide_06_background.jpg');
+            background-size: cover;
+            background-position: center;
+            opacity: 0.3;
+            z-index: 0;
+        }
+
+        .slide-content {
+            position: relative;
+            z-index: 1;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .slide-title {
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 700;
+            font-size: 42px;
+            color: var(--text-primary);
+            margin-bottom: 40px;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .cards-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 30px;
+            flex: 1;
+        }
+
+        .concept-card {
+            background: rgba(45, 45, 45, 0.6);
+            padding: 30px;
+            border-radius: 12px;
+            border-top: 4px solid var(--accent-orange);
+            display: flex;
+            flex-direction: column;
+            animation: slideInUp 0.6s ease forwards;
+            opacity: 0;
+            transition: transform 0.3s ease, box-shadow 0.3s ease, background 0.3s ease;
+        }
+
+        .concept-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 15px 30px rgba(255, 107, 0, 0.3);  /* оранжевое свечение */
+            background: rgba(45, 45, 45, 0.85);
+        }
+
+        .concept-card:nth-child(1) { animation-delay: 0.2s; }
+        .concept-card:nth-child(2) { animation-delay: 0.4s; }
+        .concept-card:nth-child(3) { animation-delay: 0.6s; }
+
+        .concept-header {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+
+        .concept-icon {
+            font-size: 48px;
+            line-height: 1;
+            flex-shrink: 0;
+        }
+
+        .concept-title {
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 700;
+            font-size: 24px;
+            color: var(--accent-orange);
+            margin: 0;
+        }
+
+        .concept-text {
+            font-size: 16px;
+            color: var(--text-primary);
+            line-height: 1.6;
+            margin-bottom: 20px;
+        }
+
+        .infographic {
+            margin-top: 30px;
+        }
+
+        .infographic-title {
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 600;
+            font-size: 16px;
+            color: var(--accent-orange);
+            margin-bottom: 15px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .token-example {
+            background: var(--bg-tertiary);
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 12px;
+            font-size: 16px;
+            color: var(--text-primary);
+            text-align: center;
+        }
+
+        .token-arrow {
+            text-align: center;
+            font-size: 20px;
+            color: var(--accent-orange);
+            margin: 8px 0;
+            animation: bounceDown 1s ease infinite;
+        }
+
+        @keyframes bounceDown {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(5px); }
+        }
+
+        .token-blocks {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+            justify-content: center;
+            margin-bottom: 10px;
+        }
+
+        .token-block {
+            background: transparent;
+            color: var(--accent-orange);
+            padding: 6px 10px;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 600;
+            border: 2px solid var(--accent-orange);
+            animation: fadeInScale 0.4s ease forwards;
+            opacity: 0;
+            white-space: nowrap;
+        }
+
+        .token-block:nth-child(1) { animation-delay: 1s; }
+        .token-block:nth-child(2) { animation-delay: 1.2s; }
+        .token-block:nth-child(3) { animation-delay: 1.4s; }
+        .token-block:nth-child(4) { animation-delay: 1.6s; }
+        .token-block:nth-child(5) { animation-delay: 1.8s; }
+        .token-block:nth-child(6) { animation-delay: 2s; }
+
+        .token-info {
+            font-size: 16px;
+            color: var(--text-secondary);
+            text-align: center;
+            margin-top: 10px;
+        }
+
+        .probability-chart {
+            margin-top: 25px;
+        }
+
+        .probability-chart-title {
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 600;
+            font-size: 16px;
+            color: var(--accent-orange);
+            margin-bottom: 15px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .chart-container {
+            display: flex;
+            align-items: flex-end;
+            height: 140px;
+            position: relative;
+            padding-left: 40px;
+        }
+
+        .chart-y-axis {
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            font-size: 12px;
+            color: var(--text-secondary);
+            padding-right: 8px;
+        }
+
+        .chart-bars {
+            display: flex;
+            align-items: flex-end;
+            justify-content: space-around;
+            flex: 1;
+            height: 100%;
+            border-bottom: 2px solid var(--bg-tertiary);
+        }
+
+        .probability-bar {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 5px;
+            flex: 1;
+            height: 100%;
+            justify-content: flex-end;
+        }
+
+        .bar {
+            width: 40px;
+            background: #888;
+            border-radius: 4px 4px 0 0;
+            animation: growUp 1s ease forwards;
+            transform-origin: bottom;
+            transform: scaleY(0);
+        }
+
+        .bar:nth-child(1) { animation-delay: 1.5s; }
+        .bar:nth-child(2) { animation-delay: 1.7s; }
+        .bar:nth-child(3) { animation-delay: 1.9s; }
+        .bar:nth-child(4) { animation-delay: 2.1s; }
+        .bar:nth-child(5) { animation-delay: 2.3s; }
+
+        @keyframes growUp {
+            to { transform: scaleY(1); }
+        }
+
+        .bar-value {
+            font-size: 12px;
+            font-weight: 700;
+            color: var(--accent-orange);
+            margin-bottom: 5px;
+        }
+
+        .bar-label {
+            font-size: 12px;
+            color: var(--text-secondary);
+            margin-top: 5px;
+        }
+
+        .probability-info {
+            font-size: 16px;
+            color: var(--text-secondary);
+            text-align: center;
+            margin-top: 15px;
+        }
+
+        .context-blocks {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .context-block {
+            flex: 1;
+            background: transparent;
+            padding: 15px;
+            border-radius: 8px;
+            border: 2px solid var(--accent-orange);
+            animation: fadeInScale 0.5s ease forwards;
+            opacity: 0;
+        }
+
+        .context-block:nth-child(1) { animation-delay: 1s; }
+        .context-block:nth-child(2) { animation-delay: 1.3s; }
+        .context-block:nth-child(3) { animation-delay: 1.6s; }
+
+        .context-block-title {
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 700;
+            font-size: 16px;
+            color: var(--accent-orange);
+            margin-bottom: 8px;
+        }
+
+        .context-block-desc {
+            font-size: 16px;
+            color: var(--text-secondary);
+            line-height: 1.4;
+        }
+
+        .context-info {
+            font-size: 16px;
+            color: var(--text-secondary);
+            text-align: center;
+        }
+
+        .temperature-slider {
+            position: relative;
+            height: 40px;
+            margin: 20px 0;
+        }
+
+        .slider-track {
+            position: absolute;
+            top: 50%;
+            left: 0;
+            right: 0;
+            height: 8px;
+            background: linear-gradient(to right, #0066cc, var(--accent-orange), #cc0000);
+            border-radius: 4px;
+            transform: translateY(-50%);
+        }
+
+        .slider-thumb {
+            position: absolute;
+            top: 50%;
+            left: 30%;
+            width: 20px;
+            height: 20px;
+            background: var(--accent-orange);
+            border: 3px solid white;
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            box-shadow: 0 2px 10px rgba(255, 107, 0, 0.5);
+            animation: slideThumb 2s ease forwards;
+        }
+
+        @keyframes slideThumb {
+            from { left: 0%; }
+            to { left: 30%; }
+        }
+
+        .slider-labels {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 10px;
+            font-size: 16px;
+        }
+
+        .slider-label-left {
+            color: #0066cc;
+            font-weight: 600;
+        }
+
+        .slider-label-right {
+            color: #cc0000;
+            font-weight: 600;
+        }
+
+        .slider-values {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 5px;
+            font-size: 16px;
+            color: var(--text-secondary);
+        }
+
+        .temperature-recommendation {
+            font-size: 16px;
+            color: var(--text-secondary);
+            text-align: center;
+            margin-top: 15px;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes slideInUp {
+            from { opacity: 0; transform: translateY(50px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes fadeInScale {
+            from { opacity: 0; transform: scale(0.8); }
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        /* Navigation */
+        .navigation {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            display: flex;
+            gap: 15px;
+            z-index: 1000;
+            align-items: center;
+        }
+
+        .nav-button {
+            width: 80px;
+            height: 45px;
+            border-radius: 8px;
+            background: var(--accent-orange);
+            border: none;
+            color: white;
+            font-size: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .nav-button:hover {
+            background: var(--accent-orange-light);
+            transform: scale(1.1);
+        }
+
+        .nav-button:disabled {
+            background: var(--bg-tertiary);
+            cursor: not-allowed;
+            opacity: 0.5;
+        }
+
+        .progress-bar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: var(--bg-tertiary);
+            z-index: 1000;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: var(--accent-orange);
+            width: 22.2%;
+            transition: width 0.3s ease;
+        }
+
+        .slide-counter {
+            font-family: 'Montserrat', sans-serif;
+            font-size: 16px;
+            color: var(--text-secondary);
+            margin-right: 15px;
+            display: inline-block;
+            vertical-align: middle;
+        }
+
+        audio {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="progress-bar">
+        <div class="progress-fill"></div>
+    </div>
+
+    <div class="navigation">
+        <span class="slide-counter">6 / 27</span>
+        <button class="nav-button" onclick="window.location.href='slide_05.html'">←</button>
+        <button class="nav-button" id="playBtn" onclick="playAudio()">▶</button>
+        <button class="nav-button" onclick="window.location.href='slide_07.html'">→</button>
+    </div>
+
+    <div class="slide">
+        <div class="slide-background"></div>
+        
+        <div class="slide-content">
+            <h1 class="slide-title">Как работает LLM: токены, вероятности, контекст</h1>
+            
+            <div class="cards-grid">
+                <!-- Card 1: Tokens -->
+                <div class="concept-card">
+                    <div class="concept-header">
+                        <div class="concept-icon">🔤</div>
+                        <div class="concept-title">Токены</div>
+                    </div>
+                    <div class="concept-text">Базовая единица обработки текста. Модель читает не слова, а части слов и символы.</div>
+                    
+                    <div class="infographic">
+                        <div class="infographic-title">Разбор на токены</div>
+                        <div class="token-example">«Сварка контактная требует контроля»</div>
+                        <div class="token-arrow">↓</div>
+                        <div class="token-blocks">
+                            <div class="token-block">Свар</div>
+                            <div class="token-block">ка</div>
+                            <div class="token-block">конт</div>
+                            <div class="token-block">актная</div>
+                            <div class="token-block">требует</div>
+                            <div class="token-block">контроля</div>
+                        </div>
+                        <div class="token-info">1 токен ≈ 0.75 слова русского текста</div>
+                        
+                        <div class="probability-chart">
+                            <div class="probability-chart-title">Распределение вероятностей</div>
+                            <div class="chart-container">
+                                <div class="chart-y-axis">
+                                    <span>100%</span>
+                                    <span>80%</span>
+                                    <span>60%</span>
+                                    <span>40%</span>
+                                    <span>20%</span>
+                                    <span>0%</span>
+                                </div>
+                                <div class="chart-bars">
+                                    <div class="probability-bar">
+                                        <div class="bar-value">85%</div>
+                                        <div class="bar" style="height: 85%;"></div>
+                                        <div class="bar-label">ток1</div>
+                                    </div>
+                                    <div class="probability-bar">
+                                        <div class="bar-value">12%</div>
+                                        <div class="bar" style="height: 12%;"></div>
+                                        <div class="bar-label">ток2</div>
+                                    </div>
+                                    <div class="probability-bar">
+                                        <div class="bar-value">2%</div>
+                                        <div class="bar" style="height: 2%;"></div>
+                                        <div class="bar-label">ток3</div>
+                                    </div>
+                                    <div class="probability-bar">
+                                        <div class="bar-value">0.8%</div>
+                                        <div class="bar" style="height: 0.8%;"></div>
+                                        <div class="bar-label">ток4</div>
+                                    </div>
+                                    <div class="probability-bar">
+                                        <div class="bar-value">0.2%</div>
+                                        <div class="bar" style="height: 0.2%;"></div>
+                                        <div class="bar-label">ток5</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="probability-info">Модель выбирает наиболее вероятный токен</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Card 2: Context Window -->
+                <div class="concept-card">
+                    <div class="concept-header">
+                        <div class="concept-icon">🧠</div>
+                        <div class="concept-title">Контекстное окно</div>
+                    </div>
+                    <div class="concept-text">Объём «оперативной памяти» модели за один запрос. Определяет, сколько текста она может удерживать и анализировать.</div>
+                    
+                    <div class="infographic">
+                        <div class="infographic-title">Контекстное окно</div>
+                        <div class="context-blocks">
+                            <div class="context-block">
+                                <div class="context-block-title">Инструкция</div>
+                                <div class="context-block-desc">системный промпт</div>
+                            </div>
+                            <div class="context-block">
+                                <div class="context-block-title">История</div>
+                                <div class="context-block-desc">предыдущие сообщения</div>
+                            </div>
+                            <div class="context-block">
+                                <div class="context-block-title">Запрос</div>
+                                <div class="context-block-desc">текущий вопрос</div>
+                            </div>
+                        </div>
+                        <div class="context-info">GPT-4 Turbo: 128K токенов ≈ 300 страниц</div>
+                    </div>
+                </div>
+
+                <!-- Card 3: Temperature -->
+                <div class="concept-card">
+                    <div class="concept-header">
+                        <div class="concept-icon">🌡️</div>
+                        <div class="concept-title">Температура</div>
+                    </div>
+                    <div class="concept-text">Параметр, регулирующий «креативность» модели. Влияет на случайность выбора следующего токена при генерации.</div>
+                    
+                    <div class="infographic">
+                        <div class="infographic-title">Температура</div>
+                        <div class="temperature-slider">
+                            <div class="slider-track"></div>
+                            <div class="slider-thumb"></div>
+                        </div>
+                        <div class="slider-labels">
+                            <span class="slider-label-left">Точность</span>
+                            <span class="slider-label-right">Креативность</span>
+                        </div>
+                        <div class="slider-values">
+                            <span>0.0</span>
+                            <span>0.3</span>
+                            <span>0.5</span>
+                            <span>0.7</span>
+                            <span>1.0</span>
+                        </div>
+                        <div class="temperature-recommendation">Для инженерных задач: температура 0.1–0.3</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <audio id="audio-6" src="../audio/slide_06_audio.mp3"></audio>
+
+    <script>
+        function playAudio() {
+            const audio = document.getElementById('audio-6');
+            if (audio) {
+                audio.play().catch(e => console.log('Audio play failed:', e));
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const audio = document.getElementById('audio-6');
+            if (audio) {
+                audio.play().catch(e => console.log('Audio play failed:', e));
+            }
+        });
+    </script>
+</body>
+</html>

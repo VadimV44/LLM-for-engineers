@@ -1,0 +1,503 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Расчёты и интеграции с LLM</title>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;900&family=Roboto:wght@300;400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-primary: #1a1a1a;
+            --bg-secondary: #2d2d2d;
+            --bg-tertiary: #3d3d3d;
+            --accent-orange: #ff6b00;
+            --accent-orange-light: #ff8533;
+            --text-primary: #ffffff;
+            --text-secondary: #b0b0b0;
+            --link-blue: #4a9eff;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Roboto', sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            overflow: hidden;
+            height: 100vh;
+        }
+
+        .slide {
+            width: 100%;
+            height: 100vh;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            padding: 60px 80px 100px 80px;
+        }
+
+        .slide-background {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: url('../images/slide_20_background.jpg');
+            background-size: cover;
+            background-position: center;
+            opacity: 0.3;
+            z-index: 0;
+        }
+
+        .slide-content {
+            position: relative;
+            z-index: 1;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .slide-title {
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 700;
+            font-size: 42px;
+            color: var(--text-primary);
+            margin-bottom: 40px;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .label {
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 700;
+            font-size: 16px;
+            color: var(--accent-orange);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        /* Верхний ряд */
+        .top-row {
+            display: grid;
+            grid-template-columns: 1.5fr 1fr;
+            gap: 20px;
+            flex: 0 0 auto;
+            animation: slideInUp 0.6s ease forwards;
+            opacity: 0;
+        }
+
+        .theses-column {
+            background: rgba(45, 45, 45, 0.6);
+            padding: 18px 20px;
+            border-radius: 12px;
+            border-left: 4px solid var(--accent-orange);
+            transition: transform 0.3s ease, box-shadow 0.3s ease, background 0.3s ease;
+        }
+
+        .theses-column:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 15px 30px rgba(255, 107, 0, 0.3);
+            background: rgba(45, 45, 45, 0.85);
+        }
+
+        .theses-list {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+            margin-top: 8px;
+        }
+
+        .theses-list li {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            font-size: 16px;
+            color: var(--text-secondary);
+            line-height: 1.5;
+        }
+
+        .theses-list li .check {
+            color: var(--accent-orange);
+            font-size: 18px;
+            flex-shrink: 0;
+            margin-top: 1px;
+        }
+
+        .theses-list li strong {
+            color: var(--text-primary);
+            font-weight: 500;
+        }
+
+        .metrics-column {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            justify-content: center;
+        }
+
+        .metric-item {
+            background: rgba(45, 45, 45, 0.6);
+            padding: 14px 18px;
+            border-radius: 12px;
+            border-left: 4px solid var(--accent-orange);
+            animation: slideInRight 0.6s ease forwards;
+            opacity: 0;
+            transition: transform 0.3s ease, box-shadow 0.3s ease, background 0.3s ease;
+            display: grid;
+            grid-template-columns: auto 1fr;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .metric-item:hover {
+            transform: translateX(-6px);
+            box-shadow: 0 10px 25px rgba(255, 107, 0, 0.3);
+            background: rgba(45, 45, 45, 0.85);
+        }
+
+        .metric-item:nth-child(1) { animation-delay: 0.2s; }
+        .metric-item:nth-child(2) { animation-delay: 0.4s; }
+        .metric-item:nth-child(3) { animation-delay: 0.6s; }
+
+        .metric-item .number {
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 900;
+            font-size: 28px;
+            color: var(--accent-orange);
+            white-space: nowrap;
+            text-align: left;
+            min-width: 70px;
+        }
+
+        .metric-item .description {
+            font-size: 16px;
+            color: var(--text-secondary);
+            line-height: 1.4;
+            text-align: left;
+            word-break: break-word;
+        }
+
+        /* Схема */
+        .scheme-block {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            flex-wrap: wrap;
+            padding: 10px 0;
+            animation: fadeIn 0.8s ease 0.4s forwards;
+            opacity: 0;
+            flex: 0 0 auto;
+        }
+
+        .scheme-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 14px;
+            color: var(--text-primary);
+            background: rgba(0,0,0,0.3);
+            padding: 6px 14px;
+            border-radius: 6px;
+        }
+
+        .scheme-item .icon {
+            font-size: 22px;
+        }
+
+        .scheme-arrow {
+            font-size: 20px;
+            color: var(--accent-orange);
+        }
+
+        /* Блок примеров промптов */
+        .prompts-block {
+            background: rgba(45, 45, 45, 0.6);
+            padding: 18px 22px;
+            border-radius: 12px;
+            border-left: 4px solid var(--accent-orange);
+            animation: slideInUp 0.8s ease 0.6s forwards;
+            opacity: 0;
+            transition: transform 0.3s ease, box-shadow 0.3s ease, background 0.3s ease;
+            flex: 1 1 auto;
+            min-height: 0;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+        }
+
+        .prompts-block:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 15px 30px rgba(255, 107, 0, 0.3);
+            background: rgba(45, 45, 45, 0.85);
+        }
+
+        .prompts-header {
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 700;
+            font-size: 16px;
+            color: var(--accent-orange);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 2px;
+            flex-shrink: 0;
+        }
+
+        .prompt-item {
+            border-bottom: 1px solid rgba(255, 107, 0, 0.15);
+            padding-bottom: 12px;
+        }
+
+        .prompt-item:last-child {
+            border-bottom: none;
+            padding-bottom: 0;
+        }
+
+        .prompt-title {
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 700;
+            font-size: 16px;
+            color: var(--accent-orange);
+            margin-bottom: 4px;
+        }
+
+        .prompt-text {
+            font-size: 16px;
+            color: var(--text-secondary);
+            line-height: 1.5;
+        }
+
+        .prompt-text .label-marker {
+            color: #ffffff;
+            font-weight: normal;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes slideInUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes slideInRight {
+            from { opacity: 0; transform: translateX(50px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        /* Navigation */
+        .navigation {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            display: flex;
+            gap: 15px;
+            z-index: 1000;
+            align-items: center;
+        }
+
+        .nav-button {
+            width: 80px;
+            height: 45px;
+            border-radius: 8px;
+            background: var(--accent-orange);
+            border: none;
+            color: white;
+            font-size: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .nav-button:hover {
+            background: var(--accent-orange-light);
+            transform: scale(1.1);
+        }
+
+        .nav-button:disabled {
+            background: var(--bg-tertiary);
+            cursor: not-allowed;
+            opacity: 0.5;
+        }
+
+        .progress-bar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: var(--bg-tertiary);
+            z-index: 1000;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: var(--accent-orange);
+            width: 74.07%; /* 20/27 */
+            transition: width 0.3s ease;
+        }
+
+        .slide-counter {
+            font-family: 'Montserrat', sans-serif;
+            font-size: 16px;
+            color: var(--text-secondary);
+            margin-right: 15px;
+            display: inline-block;
+            vertical-align: middle;
+        }
+
+        audio {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="progress-bar">
+        <div class="progress-fill"></div>
+    </div>
+
+    <div class="navigation">
+        <span class="slide-counter">20 / 27</span>
+        <button class="nav-button" onclick="window.location.href='slide_19.html'">←</button>
+        <button class="nav-button" id="playBtn" onclick="playAudio()">▶</button>
+        <button class="nav-button" onclick="window.location.href='slide_21.html'">→</button>
+    </div>
+
+    <div class="slide">
+        <div class="slide-background"></div>
+        <div class="slide-content">
+            <h1 class="slide-title">Расчёты и интеграции с LLM</h1>
+
+            <!-- Верхний ряд -->
+            <div class="top-row">
+                <div class="theses-column">
+                    <div class="label">📋 Ключевые возможности</div>
+                    <ul class="theses-list">
+                        <li><span class="check">✔</span> <strong>Расчёт технологических параметров</strong> — автоматический расчёт режимов сварки, допусков, нагрузок</li>
+                        <li><span class="check">✔</span> <strong>Интеграции с CAD/CAE</strong> — автоматическая генерация параметров для CAD-моделей и расчётных систем</li>
+                        <li><span class="check">✔</span> <strong>Автоматизация рутинных операций</strong> — создание скриптов для повторяющихся задач</li>
+                        <li><span class="check">✔</span> <strong>Написание макросов для Excel</strong> — автоматизация обработки данных и построения отчётов</li>
+                        <li><span class="check">✔</span> <strong>Работа с разнородными типами данных</strong> — объединение и анализ данных из разных источников</li>
+                        <li><span class="check">✔</span> <strong>Расчёт себестоимости</strong> — автоматический расчёт стоимости изделия с учётом материалов, трудозатрат, накладных расходов</li>
+                    </ul>
+                </div>
+
+                <div class="metrics-column">
+                    <div class="metric-item">
+                        <span class="number">до 70%</span>
+                        <span class="description">сокращение времени на инженерные расчёты</span>
+                    </div>
+                    <div class="metric-item">
+                        <span class="number">до 90%</span>
+                        <span class="description">ускорение рутинных операций за счёт скриптов и макросов</span>
+                    </div>
+                    <div class="metric-item">
+                        <span class="number">до 40%</span>
+                        <span class="description">снижение ошибок в расчётах при автоматизации</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Схема -->
+            <div class="scheme-block">
+                <div class="scheme-item"><span class="icon">📊</span> Данные</div>
+                <span class="scheme-arrow">→</span>
+                <div class="scheme-item"><span class="icon">🧮</span> LLM-расчёт</div>
+                <span class="scheme-arrow">→</span>
+                <div class="scheme-item"><span class="icon">📈</span> Результат</div>
+                <span class="scheme-arrow">→</span>
+                <div class="scheme-item"><span class="icon">🔄</span> Интеграция (CAD/Excel)</div>
+            </div>
+
+            <!-- Блок примеров промптов -->
+            <div class="prompts-block">
+                <div class="prompts-header">✅ Примеры промптов</div>
+
+                <!-- 1. Расчёт технологических параметров -->
+                <div class="prompt-item">
+                    <div class="prompt-title">🧮 Расчёт технологических параметров</div>
+                    <div class="prompt-text">
+                        <span class="label-marker">«Ты — инженер-технолог. Рассчитай режимы контактной сварки для соединения листов стали 08пс толщиной 1.5 мм и 2.0 мм. Исходные данные: тип сварки — точечная, материал электродов — хром-циркониевая бронза. Определи: диаметр электрода, сварочный ток, время импульса, усилие сжатия, шаг между точками. Представь результат в виде таблицы с формулами расчёта.»</span>
+                    </div>
+                </div>
+
+                <!-- 2. Интеграции с CAD/CAE -->
+                <div class="prompt-item">
+                    <div class="prompt-title">📐 Интеграция с CAD/CAE</div>
+                    <div class="prompt-text">
+                        <span class="label-marker">«Ты — инженер-конструктор. На основе технического задания с параметрами (габариты 1200×800×600 мм, материал — сталь 09Г2С, толщина стенки 3 мм, нагрузка 5 т) сгенерируй базовую CAD-модель сварочного стола. Укажи ключевые размеры, типы соединений (сварные, болтовые), ориентировочную массу. Предложи проверочный расчёт на прочность в CAE-системе: точки приложения нагрузки, закрепления, ожидаемые напряжения и коэффициент запаса.»</span>
+                    </div>
+                </div>
+
+                <!-- 3. Автоматизация рутинных операций -->
+                <div class="prompt-item">
+                    <div class="prompt-title">⚙️ Автоматизация рутинных операций</div>
+                    <div class="prompt-text">
+                        <span class="label-marker">«Ты — инженер-программист. Напиши Python-скрипт для автоматической обработки логов сварочного оборудования (файлы в формате CSV). Скрипт должен: 1) считывать все файлы из папки, 2) извлекать параметры сварки (ток, время, усилие) для каждой точки, 3) сравнивать их с допустимыми значениями из эталонного файла, 4) формировать отчёт о несоответствиях в формате Excel. Добавь комментарии к каждой функции.»</span>
+                    </div>
+                </div>
+
+                <!-- 4. Написание макросов для Excel -->
+                <div class="prompt-item">
+                    <div class="prompt-title">📊 Макросы для Excel</div>
+                    <div class="prompt-text">
+                        <span class="label-marker">«Ты — инженер-аналитик. Напиши VBA-макрос для Excel, который автоматически строит сводную таблицу по дефектам сварки. Исходные данные: столбцы "Дата", "Дефект", "Причина", "Количество". Макрос должен: 1) группировать данные по месяцам и типам дефектов, 2) строить столбчатую диаграмму для топ-5 дефектов, 3) рассчитывать процент брака по каждому месяцу, 4) выделять ячейки с браком >5% красным цветом. Код должен быть оптимизирован для больших файлов (>10 000 строк).»</span>
+                    </div>
+                </div>
+
+                <!-- 5. Работа с разнородными типами данных -->
+                <div class="prompt-item">
+                    <div class="prompt-title">📎 Работа с разнородными данными</div>
+                    <div class="prompt-text">
+                        <span class="label-marker">«Ты — инженер по данным. У тебя есть три источника информации: 1) таблица Excel с параметрами сварки, 2) текстовые логи (TXT) с ошибками оборудования, 3) фотографии дефектов (JPG) с подписями в отдельном файле. Объедини данные в единую базу для анализа. Для каждого дефекта укажи: параметры сварки в момент возникновения, сообщение об ошибке из лога, описание дефекта с фото. Предложи структуру базы данных (поле, тип, описание) и пример SQL-запроса для выборки топ-3 причин брака по месяцам.»</span>
+                    </div>
+                </div>
+
+                <!-- 6. Расчёт себестоимости -->
+                <div class="prompt-item">
+                    <div class="prompt-title">💰 Расчёт себестоимости</div>
+                    <div class="prompt-text">
+                        <span class="label-marker">«Ты — инженер-экономист. Рассчитай себестоимость изготовления кузовной панели. Исходные данные: материал — сталь 08пс, толщина 1.2 мм, расход материала 2.5 кг/шт, стоимость материала 85 руб/кг; сварочные электроды — 0.5 шт/изделие, 120 руб/шт; трудозатраты — 15 мин/изделие, 800 руб/час; электроэнергия — 2 кВт·ч/изделие, 7 руб/кВт·ч; амортизация оборудования — 150 руб/изделие; накладные расходы — 35%. Рассчитай полную себестоимость и точку безубыточности при выпуске 10 000 шт/месяц. Представь результат в виде структуры затрат (прямые и косвенные расходы) с диаграммой распределения.»</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <audio id="audio-20" src="../audio/slide_20_audio.mp3"></audio>
+
+    <script>
+        function playAudio() {
+            const audio = document.getElementById('audio-20');
+            if (audio) {
+                audio.play().catch(e => console.log('Audio play failed:', e));
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const audio = document.getElementById('audio-20');
+            if (audio) {
+                audio.play().catch(e => console.log('Audio play failed:', e));
+            }
+        });
+    </script>
+</body>
+</html>

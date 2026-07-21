@@ -1,0 +1,511 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Призыв к действию: три шага уже завтра</title>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;900&family=Roboto:wght@300;400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-primary: #1a1a1a;
+            --bg-secondary: #2d2d2d;
+            --bg-tertiary: #3d3d3d;
+            --accent-orange: #ff6b00;
+            --accent-orange-light: #ff8533;
+            --text-primary: #ffffff;
+            --text-secondary: #b0b0b0;
+            --link-blue: #4a9eff;
+            --green: #4caf50;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Roboto', sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            overflow: hidden;
+            height: 100vh;
+        }
+
+        .slide {
+            width: 100%;
+            height: 100vh;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            padding: 60px 80px 100px 80px;
+        }
+
+        .slide-background {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: url('../images/slide_27_background.jpg');
+            background-size: cover;
+            background-position: center;
+            opacity: 0.3;
+            z-index: 0;
+        }
+
+        .slide-content {
+            position: relative;
+            z-index: 1;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .slide-title {
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 700;
+            font-size: 42px;
+            color: var(--text-primary);
+            margin-bottom: 30px;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .label {
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 700;
+            font-size: 16px;
+            color: var(--accent-orange);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 6px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .link {
+            color: var(--link-blue);
+            text-decoration: underline;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .link:hover {
+            color: var(--accent-orange);
+            text-decoration: none;
+        }
+
+        .orange-text {
+            color: var(--accent-orange);
+            font-weight: 400;
+        }
+
+        /* Три карточки шагов */
+        .cards-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
+            flex: 0 0 auto;
+        }
+
+        .step-card {
+            background: rgba(45, 45, 45, 0.6);
+            padding: 16px 18px 14px;
+            border-radius: 12px;
+            border-top: 4px solid var(--accent-orange);
+            animation: slideInUp 0.6s ease forwards;
+            opacity: 0;
+            transition: transform 0.3s ease, box-shadow 0.3s ease, background 0.3s ease;
+            display: grid;
+            grid-template-rows: 36px 28px auto 42px;
+            gap: 4px;
+            align-items: start;
+            height: 300px;
+        }
+
+        .step-card:hover {
+            transform: translateY(-6px);
+            box-shadow: 0 15px 30px rgba(255, 107, 0, 0.3);
+            background: rgba(45, 45, 45, 0.85);
+        }
+
+        .step-card:nth-child(1) { animation-delay: 0.05s; }
+        .step-card:nth-child(2) { animation-delay: 0.15s; }
+        .step-card:nth-child(3) { animation-delay: 0.25s; }
+
+        .step-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            grid-row: 1;
+            align-self: start;
+        }
+
+        .step-number {
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 900;
+            font-size: 28px;
+            color: var(--accent-orange);
+            line-height: 1;
+        }
+
+        .step-title {
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 700;
+            font-size: 18px;
+            color: var(--text-primary);
+        }
+
+        .step-timing {
+            font-family: 'Roboto', sans-serif;
+            font-size: 16px;
+            font-weight: 400;
+            color: var(--text-secondary);
+            line-height: 1.6;
+            grid-row: 2;
+            align-self: start;
+        }
+
+        .step-list {
+            list-style: none;
+            margin: 0;
+            padding: 0;
+            grid-row: 3;
+            align-self: start;
+        }
+
+        .step-list li {
+            font-family: 'Roboto', sans-serif;
+            font-size: 16px;
+            font-weight: 400;
+            color: var(--text-primary);
+            line-height: 1.6;
+            padding-left: 24px;
+            position: relative;
+            margin-bottom: 2px;
+        }
+
+        .step-list li::before {
+            content: "›";
+            color: var(--accent-orange);
+            font-weight: 700;
+            font-size: 20px;
+            position: absolute;
+            left: 0;
+            top: -2px;
+        }
+
+        .step-result {
+            background: rgba(0,0,0,0.15);
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-family: 'Roboto', sans-serif;
+            font-size: 16px;
+            font-weight: 400;
+            color: var(--text-secondary);
+            line-height: 1.6;
+            grid-row: 4;
+            align-self: start;
+            border-left: 2px solid var(--accent-orange);
+        }
+
+        .step-result strong {
+            color: var(--text-primary);
+            font-weight: 500;
+        }
+
+        /* Блок итога — убрана общая левая граница */
+        .result-block {
+            background: rgba(45, 45, 45, 0.6);
+            padding: 12px 22px;
+            border-radius: 12px;
+            animation: fadeIn 0.8s ease 0.8s forwards;
+            opacity: 0;
+            flex: 0 0 auto;
+            transition: transform 0.3s ease, box-shadow 0.3s ease, background 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .result-block:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 15px 30px rgba(255, 107, 0, 0.3);
+            background: rgba(45, 45, 45, 0.85);
+        }
+
+        .result-item {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            font-family: 'Roboto', sans-serif;
+            font-size: 16px;
+            font-weight: 400;
+            color: var(--text-secondary);
+            line-height: 1.6;
+            padding: 6px 14px;
+            border-left: 3px solid var(--accent-orange);
+            background: rgba(0, 0, 0, 0.15);
+            border-radius: 4px;
+        }
+
+        .result-item .number {
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 900;
+            font-size: 28px;
+            color: var(--accent-orange);
+            flex-shrink: 0;
+            min-width: 70px;
+        }
+
+        .result-item strong {
+            color: var(--text-primary);
+            font-weight: 500;
+        }
+
+        /* Блок практики */
+        .practice-block {
+            background: rgba(45, 45, 45, 0.6);
+            padding: 10px 22px;
+            border-radius: 12px;
+            border-left: 4px solid var(--accent-orange);
+            animation: fadeIn 0.8s ease 1.2s forwards;
+            opacity: 0;
+            margin-top: auto;
+            transition: transform 0.3s ease, box-shadow 0.3s ease, background 0.3s ease;
+        }
+
+        .practice-block:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 15px 30px rgba(255, 107, 0, 0.3);
+            background: rgba(45, 45, 45, 0.85);
+        }
+
+        .practice-label {
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 700;
+            font-size: 14px;
+            color: var(--accent-orange);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 2px;
+        }
+
+        .practice-text {
+            font-family: 'Roboto', sans-serif;
+            font-size: 16px;
+            font-weight: 400;
+            color: var(--text-primary);
+            line-height: 1.6;
+        }
+
+        .practice-text strong {
+            color: var(--accent-orange);
+            font-weight: 500;
+        }
+
+        .practice-text .source {
+            display: block;
+            margin-top: 4px;
+            color: var(--text-secondary);
+            font-style: italic;
+            font-size: 14px;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes slideInUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Navigation */
+        .navigation {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            display: flex;
+            gap: 15px;
+            z-index: 1000;
+            align-items: center;
+        }
+
+        .nav-button {
+            width: 80px;
+            height: 45px;
+            border-radius: 8px;
+            background: var(--accent-orange);
+            border: none;
+            color: white;
+            font-size: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .nav-button:hover {
+            background: var(--accent-orange-light);
+            transform: scale(1.1);
+        }
+
+        .nav-button:disabled {
+            background: var(--bg-tertiary);
+            cursor: not-allowed;
+            opacity: 0.5;
+        }
+
+        .progress-bar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: var(--bg-tertiary);
+            z-index: 1000;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: var(--accent-orange);
+            width: 100%;
+            transition: width 0.3s ease;
+        }
+
+        .slide-counter {
+            font-family: 'Montserrat', sans-serif;
+            font-size: 16px;
+            color: var(--text-secondary);
+            margin-right: 15px;
+            display: inline-block;
+            vertical-align: middle;
+        }
+
+        audio {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="progress-bar">
+        <div class="progress-fill"></div>
+    </div>
+
+    <div class="navigation">
+        <span class="slide-counter">27 / 27</span>
+        <button class="nav-button" onclick="window.location.href='slide_26.html'">←</button>
+        <button class="nav-button" id="playBtn" onclick="playAudio()">▶</button>
+        <button class="nav-button" disabled>→</button>
+    </div>
+
+    <div class="slide">
+        <div class="slide-background"></div>
+        <div class="slide-content">
+            <h1 class="slide-title">Призыв к действию: три шага уже завтра</h1>
+
+            <!-- Три карточки шагов -->
+            <div class="cards-grid">
+                <!-- Шаг 1 -->
+                <div class="step-card">
+                    <div class="step-header">
+                        <span class="step-number">1</span>
+                        <span class="step-title">Проверка доступа</span>
+                    </div>
+                    <div class="step-timing">⏱ 15 минут (сегодня)</div>
+                    <ul class="step-list">
+                        <li>Проверить <a href="https://alicepro.yandex.ru" target="_blank" class="link">Алиса Про</a> которая уже подключена к корпоративной почте <span class="orange-text">(пока не работает, ожидается запуск в использование)</span></li>
+                        <li>Задай <a href="https://alice.yandex.ru/" target="_blank" class="link">Алисе AI</a> вопросы которые вы хотели бы задать по данному курсу</li>
+                    </ul>
+                    <div class="step-result">
+                        <strong>Результат:</strong> доступ подтверждён
+                    </div>
+                </div>
+
+                <!-- Шаг 2 -->
+                <div class="step-card">
+                    <div class="step-header">
+                        <span class="step-number">2</span>
+                        <span class="step-title">Первый промпт</span>
+                    </div>
+                    <div class="step-timing">⏱ 30 минут (завтра до обеда)</div>
+                    <ul class="step-list">
+                        <li>Выбрать одну рутинную задачу (генерация ТЗ, план-график, анализ дефектов и т.д.)</li>
+                        <li>Составить промпт по структуре РКЗФО</li>
+                        <li>Получить черновик и сравнить с ручной работой</li>
+                    </ul>
+                    <div class="step-result">
+                        <strong>Результат:</strong> первый черновик готов
+                    </div>
+                </div>
+
+                <!-- Шаг 3 -->
+                <div class="step-card">
+                    <div class="step-header">
+                        <span class="step-number">3</span>
+                        <span class="step-title">Замер и рефлексия</span>
+                    </div>
+                    <div class="step-timing">⏱ 15 минут (завтра до конца дня)</div>
+                    <ul class="step-list">
+                        <li>Замерить время: сколько тратили раньше и сколько с LLM</li>
+                        <li>Записать результат в блокнот или таблицу</li>
+                        <li>Поделиться опытом с руководителем отдела — рассказать, что получилось</li>
+                    </ul>
+                    <div class="step-result">
+                        <strong>Результат:</strong> первый опыт зафиксирован
+                    </div>
+                </div>
+            </div>
+
+            <!-- Блок итога — убрана общая левая граница -->
+            <div class="result-block">
+                <div class="result-item">
+                    <span class="number">3–5 ч</span>
+                    <span>экономии через <strong>неделю</strong></span>
+                </div>
+                <div class="result-item">
+                    <span class="number">15–20 ч</span>
+                    <span>экономии через <strong>месяц</strong></span>
+                </div>
+                <div class="result-item">
+                    <span class="number">80%</span>
+                    <span>инженеров продолжают использовать LLM после первого успешного промпта</span>
+                </div>
+            </div>
+
+            <!-- Блок практики -->
+            <div class="practice-block">
+                <div class="practice-label">💡 Практическая рекомендация</div>
+                <div class="practice-text">
+                    Не пытайтесь сразу охватить все задачи. Начните с одной, доведите до результата, затем масштабируйте.
+                    <span class="source">Связь с ДИ: регулярно повышайте профессиональный уровень, изучайте передовой опыт, участвуйте в наработке идей по оптимизации процессов (Монозукури)</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <audio id="audio-27" src="../audio/slide_27_audio.mp3"></audio>
+
+    <script>
+        function playAudio() {
+            const audio = document.getElementById('audio-27');
+            if (audio) {
+                audio.play().catch(e => console.log('Audio play failed:', e));
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const audio = document.getElementById('audio-27');
+            if (audio) {
+                audio.play().catch(e => console.log('Audio play failed:', e));
+            }
+        });
+    </script>
+</body>
+</html>
